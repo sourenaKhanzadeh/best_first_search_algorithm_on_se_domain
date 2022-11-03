@@ -41,7 +41,7 @@ class SearchEngine(ABC):
 
     def setStartState(self, start_state):
         self.start_state = start_state
-        
+
     
     def get_path(self):
         return self.path

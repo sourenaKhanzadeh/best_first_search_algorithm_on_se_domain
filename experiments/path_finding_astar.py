@@ -12,7 +12,7 @@ def main():
     # create a grid
     grid = Grid(10, 10)
     # create a map
-    map = Map(grid, start=(0, 0), goal=(9, 9))
+    map = Map(grid, start=Cell(0, 0, 1), goal=Cell(9, 9, 1))
     # create a search engine
     search_engine = AStar()
     # set the transition system

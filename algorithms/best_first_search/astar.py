@@ -21,14 +21,14 @@ class AStar(SearchEngine):
                 self.status = SearchStatus.TERMINATED
                 return self.path
             for child in self.transition_system(current):
-                if child in self.closed:
+                if child[1] in self.closed:
                     continue
-                if child not in self.open:
-                    self.open.append(child)
+                if child[1] not in self.open:
+                    self.open.append(child[1])
                 else:
-                    if child.g < current.g:
-                        self.open.remove(child)
-                        self.open.append(child)
+                    if child[1].g < current.g:
+                        self.open.remove(child[1])
+                        self.open.append(child[1])
             self.open.sort(key=lambda x: x.g + x.h)
         self.status = SearchStatus.TERMINATED
         return None

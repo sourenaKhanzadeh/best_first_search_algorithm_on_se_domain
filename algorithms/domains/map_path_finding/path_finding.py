@@ -36,7 +36,7 @@ class TransitionSystem(object):
         return 'TransitionSystem with %d states' % len(self.states)
     
     def __call__(self, *args, **kwds) :
-        return self.states
+        return self.successors(*args, **kwds)
 
 class State(object):
     """A state in a transition system."""
@@ -151,113 +151,53 @@ class Map:
         self.goal_test = self.transition_system.is_goal
 
     def create_transition_system(self):
-        # create a set of states
-        states = set()
-        # create a set of actions
-        actions = set()
-        # create a transition relation
-        transition_relation = dict()
+        # create the transition system
+        transition_system = TransitionSystem(
+            states=self.create_states(),
+            actions=self.create_actions(),
+            transition_relation=self.create_transition_relation(),
+            init=self.create_initial_state(),
+            goals=self.create_goal_states()
+        )
 
-        # create a set of goal states
-        goals = []
-        # create a cost function
-        cost_function = CostFunction()
-
-        # create a heuristic function
-        heuristic = Heuristic()
-
-        # create a set of cells
-        cells = set()
-        # loop over the grid
-        for x in range(self.grid.width):
-            for y in range(self.grid.height):
-                # create a cell
-                cell = self.grid[x, y]
-                # add the cell to the set of cells
-                cells.add(cell)
-                # create a state
-                state = State(f"({cell.x}, {cell.y})")
-                # add the state to the set of states
-                states.add(state)
-                # create a goal state
-                if cell.x == self.goal[0] and cell.y == self.goal[1]:
-                    # add the state to the set of goal states
-                    goals.append(state)
-                # create a start state
-                if cell.x == self.start[0] and cell.y == self.start[1]:
-                    # set the initial state
-                    init = state
-
-                # create a set of actions
-                action_set = set()
-                # check if the cell is not a wall
-                if cell.value != 0:
-                    # check if the cell is not on the left edge
-                    if cell.x > 0:
-                        # create a left action
-                        left_action = Action("left")
-                        # add the left action to the set of actions
-                        actions.add(left_action)
-                        # add the left action to the set of actions
-                        action_set.add(left_action)
-                        # create a left state
-                        left_state = State(f"({cell.x - 1}, {cell.y})", parent=state)
-                        # add the left state to the
-                        states.add(left_state)
-                        # add the left state to the set of states
-                        states.add(left_state)
-                        # add the transition to the transition relation
-                        transition_relation[(state, left_action, left_state)] = Cost(1)
-                    # check if the cell is not on the right edge
-                    if cell.x < self.grid.width - 1:
-                        # create a right action
-                        right_action = Action("right")
-                        # add the right action to the set of actions
-                        actions.add(right_action)
-                        # add the right action to the set of actions
-                        action_set.add(right_action)
-                        # create a right state
-                        right_state = State(f"({cell.x + 1}, {cell.y})", parent=state)
-                        # add the right state to the set of states
-                        states.add(right_state)
-                        # add the transition to the transition relation
-                        transition_relation[(state, right_action, right_state)] = Cost(1)
-                    # check if the cell is not on the top edge
-                    if cell.y > 0:
-                        # create a up action
-                        up_action = Action("up")
-                        # add the up action to the set of actions
-                        actions.add(up_action)
-                        # add the up action to the set of actions
-                        action_set.add(up_action)
-                        # create a up state
-                        up_state = State(f"({cell.x}, {cell.y - 1})", parent=state)
-                        # add the up state to the set of states
-                        states.add(up_state)
-                        # add the transition to the transition relation
-                        transition_relation[(state, up_action, up_state)] = Cost(1)
-                    # check if the cell is not on the bottom edge
-                    if cell.y < self.grid.height - 1:
-                        # create a down action
-                        down_action = Action("down")
-                        # add the down action to the set of actions
-                        actions.add(down_action)
-                        # add the down action to the set of actions
-                        action_set.add(down_action)
-                        # create a down state
-                        down_state = State(f"({cell.x}, {cell.y + 1})", parent=state)
-                        # add the down state to the set of states
-                        states.add(down_state)
-                        # add the transition to the transition relation
-                        transition_relation[(state, down_action, down_state)] = Cost(1)
-
-                # add the action set to the transition relation
-                transition_relation[state] = action_set
-
-        # create a transition system
-        transition_system = TransitionSystem(states, actions, transition_relation, init, goals)
         # return the transition system
         return transition_system
+
+    def create_states(self):
+        # create the states
+        states = [State(str(cell)) for row in self.grid.cells for cell in row]
+        # make the parent attribute of each state a dictionary
+
+        # return the states
+        return states
+
+    def create_actions(self):
+        # create the actions
+        actions = [Action('up'), Action('down'), Action('left'), Action('right')]
+
+        # return the actions
+        return actions
+    
+    def create_transition_relation(self):
+        # create the transition relation
+        transition_relation = lambda state, action, next_state: self.transition(state, action, next_state)
+
+        # return the transition relation
+        return transition_relation
+    
+    def create_initial_state(self):
+        # create the initial state
+        initial_state = State(str(self.start))
+
+        # return the initial state
+        return initial_state
+
+    def create_goal_states(self):
+        # create the goal states
+        goal_states = [State(str(self.goal))]
+
+        # return the goal states
+        return goal_states
 
     def create_heuristic(self):
         # create a heuristic function
@@ -272,3 +212,50 @@ class Map:
 
         # return the cost function
         return cost_function
+    
+    def transition(self, state, action, next_state):
+        # get the cell for the state
+        cell = self.get_cell(state)
+        # get the cell for the next state
+        next_cell = self.get_cell(next_state)
+        # check if the next cell is valid
+        if self.is_valid_cell(next_cell):
+            # check if the action is valid
+            if self.is_valid_action(cell, action, state, next_state):
+                # return true
+                return True
+        # return false
+        return False
+    
+    def get_cell(self, state):
+        # get the cell for the state
+        cell = self.grid[int(state.name[1]), int(state.name[4])]
+        # return the cell
+        return cell
+    
+    def is_valid_cell(self, cell):
+        # check if the cell is valid
+        if cell.value == 1:
+            # return true
+            return True
+        # return false
+        return False
+
+    def is_valid_action(self, cell, action, state, next_state):
+        # check if the action is valid
+        if action.name == 'up' and cell.y < self.grid.height - 1:
+
+            # return true
+            return True
+        elif action.name == 'down' and cell.y > 0:
+            # return true
+            return True
+        elif action.name == 'left' and cell.x > 0:
+            # return true
+            return True
+        elif action.name == 'right' and cell.x < self.grid.width - 1:
+            # return true
+            return True
+        # return false
+        return False
+    
