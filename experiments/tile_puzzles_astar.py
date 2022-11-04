@@ -29,6 +29,7 @@ def main():
     path = search_engine.search(tile_puzzle.init, tile_puzzle.goals)
     # print the path
     print(path)
+    print(search_engine.statistics())
 
 if __name__ == "__main__":
     main()

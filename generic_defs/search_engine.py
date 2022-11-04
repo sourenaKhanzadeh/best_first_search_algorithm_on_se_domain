@@ -25,7 +25,18 @@ class SearchEngine(ABC):
         self.path = []
         self.visited = []
         self.cost = 0
-    
+    def statistics(self):
+        return {
+            "path": self.path,
+            "visited": self.visited,
+            "cost": self.cost,
+            "status": self.status,
+            "nodes_expanded": len(self.visited),
+            "nodes_generated": len(self.visited) + len(self.open),
+            "unique_nodes_generated": len(self.visited) + len(self.open) - len(self.closed),
+            "max_nodes_in_memory": len(self.open) + len(self.closed),
+        }
+
     def setTransitionSystem(self, transition_system):
         self.transition_system = transition_system
         self.status = SearchStatus.READY

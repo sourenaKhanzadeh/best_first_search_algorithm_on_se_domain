@@ -31,6 +31,8 @@ def main():
     path = search_engine.search(map.start_state, map.goal_state)
     # print the path
     print(path)
+    print(search_engine.statistics())
+
 
 if __name__ == "__main__":
     main()
