@@ -30,12 +30,12 @@ class AStar(SearchEngine):
                     if child[1].g < current.g:
                         self.open.remove(child[1])
                         self.open.append(child[1])
-            self.open.sort(key=lambda x: x.g + x.h)
+            self.open.sort(key=lambda x: x.g + self.heuristic(x))
         self.status = SearchStatus.TERMINATED
         return None
 
     def heuristic(self, node):
-        pass
+        self.heuristic(node)
 
     def reconstruct_path(self, current):
         path = []
