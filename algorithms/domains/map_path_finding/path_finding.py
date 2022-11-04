@@ -102,8 +102,8 @@ class Grid(object):
 
 class CostFunction(object):
     """A cost function maps (state, action, next_state) triples to costs."""
-    def __call__(self, state, action, next_state):
-        return 1
+    def __call__(self, state, action):
+        return state.g + 1
 
 
 class Heuristic(object):
@@ -205,7 +205,7 @@ class Map:
         # check if the next cell is the wall
         if self.is_wall(next_cell):
             return False
-            
+
         # check if the next cell is the goal
         if next_cell == self.goal:
             return True

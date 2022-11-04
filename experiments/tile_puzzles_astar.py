@@ -13,7 +13,7 @@ def main():
     tile_puzzle = TilePuzzle(3, init=[1, 5, 2, 0, 3, 6, 7, 8, 4], goals=[[1, 2, 3, 4, 5, 6, 7, 8, 0]])
 
     # create a search engine
-    search_engine = AStar()
+    search_engine = AStar(1)
     # set the transition system
     search_engine.setTransitionSystem(tile_puzzle.to_transition_system())
     # set the heuristic
@@ -29,6 +29,7 @@ def main():
     path = search_engine.search(tile_puzzle.init, tile_puzzle.goals)
     # print the path
     print(path)
+    # print(search_engine.statistics())
     print(search_engine.statistics())
 
 if __name__ == "__main__":

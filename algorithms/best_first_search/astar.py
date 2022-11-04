@@ -3,10 +3,11 @@ from generic_defs.search_engine import *
 
 class AStar(SearchEngine):
 
-    def __init__(self):
+    def __init__(self, w=1):
         super().__init__()
         self.open = []
         self.closed = []
+        self.w = w
 
     def search(self, start, goal):
         self.open = [start]
@@ -27,12 +28,16 @@ class AStar(SearchEngine):
                 if child not in self.open:
                     child.parent = current
                     child.action = action
+                    child.g = self.cost_function(current, action)
                     self.open.append(child)
                 else:
                     if child.g < current.g:
                         self.open.remove(child)
+                        child.parent = current
+                        child.action = action
+                        child.g = self.cost_function(current, action)
                         self.open.append(child)
-            self.open.sort(key=lambda x: x.g + self.heuristic(x))
+            self.open.sort(key=lambda x: x.g + self.w * self.heuristic(x))
         self.status = SearchStatus.TERMINATED
         return None
 
@@ -44,6 +49,7 @@ class AStar(SearchEngine):
         while current.parent:
             path.append(current)
             current = current.parent
+
         path.append(current)
         return path[::-1]
     

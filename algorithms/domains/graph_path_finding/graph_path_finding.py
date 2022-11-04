@@ -46,8 +46,8 @@ class Graph():
     def heuristic(self,n=0,m=0):
         return 0
 
-    def cost_function(self,n=0,m=0):
-        return 1
+    def cost_function(self, state, action):
+        return state.g + 1
 
     def __repr__(self):
         return "V: " + str(self.V) +"\n" + "E: " + str(self.E)
@@ -102,7 +102,7 @@ class TransitionSystem(object):
 
     def cost(self, state, action, next_state):
         """Return the cost of taking |action| from |state| to |next_state|."""
-        return 1
+        return state.g + 1
 
     def heuristic(self, state):
         """Return the heuristic cost of |state|."""

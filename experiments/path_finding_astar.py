@@ -15,7 +15,7 @@ def main():
     # create a map
     map = Map(grid, start=Cell(0, 0, 1), goal=Cell(9, 9, 1))
     # create a search engine
-    search_engine = AStar()
+    search_engine = AStar(1)
     # set the transition system
     search_engine.setTransitionSystem(map.transition_system)
     # set the heuristic

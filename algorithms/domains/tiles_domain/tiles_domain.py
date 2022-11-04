@@ -20,7 +20,12 @@ class TransitionSystem:
                 yield action, self.transition_relation(state, action)[1]
             else:
                 continue
-    
+    def get_action_cost(self, state, action):
+        """
+        Return g cost of action
+        """
+        return self.transition_relation(state, action)[0]
+
     def is_goal(self, state):
         return state in self.goals
     
@@ -28,7 +33,7 @@ class TransitionSystem:
         return self.successors(*args, **kwds)
 
 class State:
-    def __init__(self, name, cell=None, parent = None, g = 0):
+    def __init__(self, name, cell=None, parent = None, g = 1):
         self.name = name
         self.g = g
         self.parent = parent
@@ -82,7 +87,7 @@ class TilePuzzle:
         
         self.transition_relation = self._transition_relation
         self.heuristic = self.heuristic
-        self.cost_function = lambda s, a, s1: 1
+        self.cost_function = self.cost_function
         self.goal_test = lambda s: s == self.goals
         
     def _transition_relation(self, state, action):
@@ -100,7 +105,13 @@ class TilePuzzle:
         # check if the next state is reachable from the current state
         
         return True, self.apply_action(state, action)
-    
+
+    def cost_function(self, state, action):
+        """
+        Return the cost of applying |action| in |state| to reach |next_state|.
+        """
+        return state.g + self.apply_action(state, action).g
+
     def apply_action(self, state, action):
         """
         Apply |action| to |state| and return the result.
