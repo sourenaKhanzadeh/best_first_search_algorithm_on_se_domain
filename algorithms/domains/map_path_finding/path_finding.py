@@ -40,11 +40,12 @@ class TransitionSystem(object):
 
 class State(object):
     """A state in a transition system."""
-    def __init__(self, name, parent = None, g = 0, h = 0):
+    def __init__(self, name, cell=None, parent = None, g = 0, h = 0):
         self.name = name
         self.g = g
         self.h = h
         self.parent = parent
+        self.cell = cell
 
     def __str__(self):
         return self.name
@@ -165,7 +166,8 @@ class Map:
 
     def create_states(self):
         # create the states
-        states = [State(str(cell)) for row in self.grid.cells for cell in row]
+        states = [State(str(cell), cell=cell) for row in self.grid.cells for cell in row]
+        
         # make the parent attribute of each state a dictionary
 
         # return the states
@@ -187,14 +189,14 @@ class Map:
     
     def create_initial_state(self):
         # create the initial state
-        initial_state = State(str(self.start))
+        initial_state = State(str(self.start), cell=self.start)
 
         # return the initial state
         return initial_state
 
     def create_goal_states(self):
         # create the goal states
-        goal_states = [State(str(self.goal))]
+        goal_states = [State(str(self.goal), cell=self.goal)]
 
         # return the goal states
         return goal_states
@@ -214,48 +216,62 @@ class Map:
         return cost_function
     
     def transition(self, state, action, next_state):
-        # get the cell for the state
-        cell = self.get_cell(state)
-        # get the cell for the next state
-        next_cell = self.get_cell(next_state)
+        # get the cell from the state
+        cell = state.cell
+
+        # get the next cell based on the action
+        next_cell = self.get_next_cell(cell, action)
+
         # check if the next cell is valid
-        if self.is_valid_cell(next_cell):
-            # check if the action is valid
-            if self.is_valid_action(cell, action, state, next_state):
-                # return true
-                return True
-        # return false
+        if not self.is_valid_cell(next_cell):
+            return False
+
+        # check if the next cell is the goal
+        if next_cell == self.goal:
+            return True
+
+        # check if the next cell is the same as the next state
+        if next_cell == next_state.cell:
+            return True
+
+        # return false if the transition is not valid
         return False
     
-    def get_cell(self, state):
-        # get the cell for the state
-        cell = self.grid[int(state.name[1]), int(state.name[4])]
-        # return the cell
-        return cell
-    
+    def get_next_cell(self, cell, action):
+        # get the next cell based on the action
+        if action == Action('up') and cell.y > 0:
+            return self.grid[cell.x, cell.y - 1]
+        elif action == Action('down') and cell.y < self.grid.height - 1:
+            return self.grid[cell.x, cell.y + 1]
+        elif action == Action('left') and cell.x > 0:
+            return self.grid[cell.x - 1, cell.y]
+        elif action == Action('right') and cell.x < self.grid.width - 1:
+            return self.grid[cell.x + 1, cell.y]
+        else:
+            return cell
+
     def is_valid_cell(self, cell):
         # check if the cell is valid
-        if cell.value == 1:
-            # return true
+        if cell.x >= 0 and cell.x < self.grid.width and cell.y >= 0 and cell.y < self.grid.height:
+            # return True
             return True
-        # return false
+        # return False
         return False
 
-    def is_valid_action(self, cell, action, state, next_state):
-        # check if the action is valid
-        if action.name == 'up' and cell.y < self.grid.height - 1:
-
-            # return true
+    def is_wall(self, cell):
+        # check if the cell is a wall
+        if cell.value == 0:
+            # return True
             return True
-        elif action.name == 'down' and cell.y > 0:
-            # return true
-            return True
-        elif action.name == 'left' and cell.x > 0:
-            # return true
-            return True
-        elif action.name == 'right' and cell.x < self.grid.width - 1:
-            # return true
-            return True
-        # return false
+        # return False
         return False
+
+    def is_goal(self, cell):
+        # check if the cell is the goal
+        if cell.x == self.goal.x and cell.y == self.goal.y:
+            # return True
+            return True
+        # return False
+        return False
+
     

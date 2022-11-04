@@ -24,6 +24,7 @@ class AStar(SearchEngine):
                 if child[1] in self.closed:
                     continue
                 if child[1] not in self.open:
+                    child[1].parent = current
                     self.open.append(child[1])
                 else:
                     if child[1].g < current.g:
