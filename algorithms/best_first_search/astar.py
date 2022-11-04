@@ -16,20 +16,22 @@ class AStar(SearchEngine):
             self.closed.append(current)
             if self.goal_test(current):
                 self.path = self.reconstruct_path(current)
+                self.actions = self.reconstruct_path_actions(current)
                 self.visited = self.closed + self.open
                 self.cost = current.g
                 self.status = SearchStatus.TERMINATED
-                return self.path
-            for child in self.transition_system(current):
-                if child[1] in self.closed:
+                return self.path, self.actions
+            for action, child in self.transition_system(current):
+                if child in self.closed:
                     continue
-                if child[1] not in self.open:
-                    child[1].parent = current
-                    self.open.append(child[1])
+                if child not in self.open:
+                    child.parent = current
+                    child.action = action
+                    self.open.append(child)
                 else:
-                    if child[1].g < current.g:
-                        self.open.remove(child[1])
-                        self.open.append(child[1])
+                    if child.g < current.g:
+                        self.open.remove(child)
+                        self.open.append(child)
             self.open.sort(key=lambda x: x.g + self.heuristic(x))
         self.status = SearchStatus.TERMINATED
         return None
@@ -43,6 +45,13 @@ class AStar(SearchEngine):
             path.append(current)
             current = current.parent
         path.append(current)
+        return path[::-1]
+    
+    def reconstruct_path_actions(self, current):
+        path = []
+        while current.parent:
+            path.append(current.action)
+            current = current.parent
         return path[::-1]
 
     def setTransitionSystem(self, transition_system):
