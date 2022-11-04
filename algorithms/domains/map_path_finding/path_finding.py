@@ -202,6 +202,10 @@ class Map:
         if not self.is_valid_cell(next_cell):
             return False
 
+        # check if the next cell is the wall
+        if self.is_wall(next_cell):
+            return False
+            
         # check if the next cell is the goal
         if next_cell == self.goal:
             return True

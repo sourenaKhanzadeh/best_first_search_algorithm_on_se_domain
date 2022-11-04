@@ -11,6 +11,7 @@ from algorithms.best_first_search.astar import *
 def main():
     # create a grid
     grid = Grid(10, 10)
+    grid[8, 9].value = 0
     # create a map
     map = Map(grid, start=Cell(0, 0, 1), goal=Cell(9, 9, 1))
     # create a search engine
