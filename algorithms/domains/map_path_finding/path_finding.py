@@ -24,14 +24,6 @@ class TransitionSystem(object):
         """Return true if |state| is a goal state."""
         return state in self.goals
 
-    def cost(self, state, action, next_state):
-        """Return the cost of taking |action| from |state| to |next_state|."""
-        return 1
-
-    def heuristic(self, state):
-        """Return the heuristic cost of |state|."""
-        return 0
-
     def __str__(self):
         return 'TransitionSystem with %d states' % len(self.states)
     
@@ -40,10 +32,9 @@ class TransitionSystem(object):
 
 class State(object):
     """A state in a transition system."""
-    def __init__(self, name, cell=None, parent = None, g = 0, h = 0):
+    def __init__(self, name, cell=None, parent = None, g = 0):
         self.name = name
         self.g = g
-        self.h = h
         self.parent = parent
         self.cell = cell
 
@@ -114,21 +105,6 @@ class CostFunction(object):
     def __call__(self, state, action, next_state):
         return 1
 
-class Cost:
-    def __init__(self, cost):
-        self.cost = cost
-
-    def __str__(self):
-        return f"Cost: {self.cost}"
-
-    def __repr__(self):
-        return f"Cost: {self.cost}"
-
-    def __eq__(self, other):
-        return self.cost == other.cost
-
-    def __hash__(self):
-        return hash(self.cost)
 
 class Heuristic(object):
     """A heuristic function maps states to costs."""
