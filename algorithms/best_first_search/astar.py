@@ -31,17 +31,18 @@ class AStar(SearchEngine):
                     child.g = self.cost_function(current, action)
                     self.open.append(child)
                 else:
-                    if child.g < current.g:
+                    if child.g <= current.g:
                         self.open.remove(child)
                         child.parent = current
                         child.action = action
                         child.g = self.cost_function(current, action)
                         self.open.append(child)
+                        
             # put the current fscore in the heap
-            # heapq.heapify(self.open)
+            heapq.heapify(self.open)
             # get the lowest fscore from the heap
-            # self.open = heapq.nsmallest(len(self.open), self.open, key=lambda x: x.g + self.w * self.heuristic(x))
-            self.open.sort(key=lambda x: x.g + self.w * self.heuristic(x))
+            self.open = heapq.nsmallest(len(self.open), self.open, key=lambda x: x.g + self.w * self.heuristic(x))
+            # self.open.sort(key=lambda x: x.g + self.w * self.heuristic(x))
         self.status = SearchStatus.TERMINATED
         return None
 

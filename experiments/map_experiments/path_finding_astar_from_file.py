@@ -17,7 +17,27 @@ from algorithms.best_first_search.astar import *
 
 MAP_FILE = "./map_files/starcraft_bgh.map"
 PROBS_FILE = "./map_files/starcraft_bgh.probs"
+CSV_FILE = "./map_files/starcraft.csv"
+USE_CSV = True
 
+def make_csv_arrange_smallest_to_largest():
+    # read from csv file
+    with open(CSV_FILE, 'r') as filehandle:
+        all_lines = filehandle.readlines()
+        csv_arrange = [{i+1:list(map(lambda x: int(x), ii.strip().split('\t')))} for i, ii in enumerate(all_lines[1:])]
+    # sort the csv_arrange indicies by the second element
+    csv_arrange.sort(key=lambda x: x[list(x.keys())[0]][1])
+    return csv_arrange
+
+def rearrange_props():
+    experiments = read_probs_file()
+    csv_arrange = make_csv_arrange_smallest_to_largest()
+    new_experiments = []
+    for i in csv_arrange:
+        new_experiments.append(experiments[list(i.keys())[0]])
+    # print(new_experiments)
+    print(csv_arrange)
+    return new_experiments
 
 def map_reader(grid_map):
     new_map = []
@@ -48,6 +68,8 @@ def read_probs_file():
     experiments = []
     with open(PROBS_FILE, 'r') as filehandle:
         for line in filehandle:
+            if line.startswith('#'):
+                continue
             int_line = []
             for i in line.strip().split():
                 int_line.append(int(i))
@@ -58,16 +80,19 @@ def read_probs_file():
 
 def initiate_grid_from_map():
     h, w, grid_map = read_map_file()
-    grid = Grid(h, w)
-    for i in range(h):
-        for j in range(w):
+    grid = Grid(w, h)
+    for i in range(w):
+        for j in range(h):
             grid[j, i].value = grid_map[i][j]
     return grid
 
 
 def main():
     grid = initiate_grid_from_map()
-    experiments = read_probs_file()
+    if USE_CSV:
+        experiments = rearrange_props()
+    else:
+        experiments = read_probs_file()
 
     for experiment in experiments:
         # print(experiment[0], experiment[1])
