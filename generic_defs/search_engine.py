@@ -25,6 +25,7 @@ class SearchEngine(ABC):
         self.path = []
         self.visited = []
         self.cost = 0
+        
     def statistics(self):
         return {
             "path": self.path,
