@@ -90,8 +90,12 @@ def initiate_grid_from_map():
 def main():
     grid = initiate_grid_from_map()
     if USE_CSV:
+        index = 0
         experiments = rearrange_props()
+        read_csv = make_csv_arrange_smallest_to_largest()
     else:
+        index = None
+        read_csv = None
         experiments = read_probs_file()
 
     for experiment in experiments:
@@ -122,6 +126,10 @@ def main():
         # print(path)
         statistics_s = search_engine.statistics()
         print(statistics_s["cost"], statistics_s["nodes_expanded"])
+        if USE_CSV:
+            assert statistics_s["cost"] == read_csv[index][list(read_csv[index].keys())[0]][0], \
+                f"Costs don't match {statistics_s['cost']} != {read_csv[index][list(read_csv[index].keys())[0]][0]}"
+            index += 1
     # grid[8, 9].value = 0
     # # create a map
     # map = Map(grid, start=Cell(0, 0, 1), goal=Cell(9, 9, 1))
