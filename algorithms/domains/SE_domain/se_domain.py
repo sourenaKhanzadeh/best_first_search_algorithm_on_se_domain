@@ -75,8 +75,6 @@ class Node:
             return self.name == other
         else:
             return False
-    def __iter__(self):
-        return self.cell.__iter__()
 
     def __hash__(self):
         return hash(self.name)
@@ -102,12 +100,29 @@ class Action:
     def __hash__(self):
         return hash(self.name)
 
-class SE_Domain:
+class CostFunction:
+
+    def __init__(self, cost):
+        self.cost = cost
+
+    def __str__(self):
+        return 'CostFunction({})'.format(self.cost)
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __call__(self, *args, **kwds):
+        return self.cost(*args, **kwds)
+
+class SEDomain:
     def __init__(self, graph, start_state, goal_state): 
-        self.transition_system = self.create_transition_system()
         self.graph = graph
         self.start_state = start_state
         self.goal_state = goal_state
+        self.transition_system = self.create_transition_system()
+        self.heuristic = self.heuristic
+        self.cost_function = CostFunction(self.get_action_cost)
+        self.goal_test = self.goal_test
 
     def __str__(self):
         return 'SE_Domain({}, {})'.format(self.transition_system, self.graph)
@@ -148,6 +163,14 @@ class SE_Domain:
                     return (edge.cost, None)
         return (0, None)
 
+    def heuristic(self, state):
+        """
+        Return the heuristic value of a state
+        """
+        return 0
+    
+    def goal_test(self, state):
+        return self.is_goal(state)
 
     def successors(self, state):
         """Return a list of (action, next_state) pairs reachable from |state|."""
@@ -163,7 +186,7 @@ class SE_Domain:
         return self.transition_system.transition_relation(state, action)[0]
 
     def is_goal(self, state):
-        return state in self.transition_system.goals
+        return state == self.transition_system.goals
     
     def __call__(self, *args, **kwds) :
         return self.successors(*args, **kwds)
