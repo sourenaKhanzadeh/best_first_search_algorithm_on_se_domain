@@ -1,5 +1,5 @@
 from generic_defs.search_engine import *
-
+import heapq
 
 class AStar(SearchEngine):
 
@@ -37,7 +37,11 @@ class AStar(SearchEngine):
                         child.action = action
                         child.g = self.cost_function(current, action)
                         self.open.append(child)
-            self.open.sort(key=lambda x: x.g + self.w * self.heuristic(x))
+            # put the current fscore in the heap
+            heapq.heapify(self.open)
+            # get the lowest fscore from the heap
+            self.open = heapq.nsmallest(len(self.open), self.open, key=lambda x: x.g + self.w * self.heuristic(x))
+            # self.open.sort(key=lambda x: x.g + self.w * self.heuristic(x))
         self.status = SearchStatus.TERMINATED
         return None
 

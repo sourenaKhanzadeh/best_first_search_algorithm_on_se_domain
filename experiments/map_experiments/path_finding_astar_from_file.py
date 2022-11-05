@@ -3,17 +3,20 @@ import os
 
 # add the parent directory to the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# add parent of the parent directory to the path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 # import the necessary packages
 from generic_defs.search_engine import *
 from algorithms.domains.map_path_finding.path_finding import *
 from algorithms.best_first_search.astar import *
 
 # For empty grid
-MAP_FILE = "./map_files/empty_grid.map"
-PROBS_FILE = "./map_files/empty_grid.probs"
+# MAP_FILE = "./map_files/empty_grid.map"
+# PROBS_FILE = "./map_files/empty_grid.probs"
 
-# MAP_FILE = "./map_files/starcraft_bgh.map"
-# PROBS_FILE = "./map_files/starcraft_bgh.probs"
+MAP_FILE = "./map_files/starcraft_bgh.map"
+PROBS_FILE = "./map_files/starcraft_bgh.probs"
 
 
 def map_reader(grid_map):
@@ -58,7 +61,7 @@ def initiate_grid_from_map():
     grid = Grid(h, w)
     for i in range(h):
         for j in range(w):
-            grid[i, j].value = grid_map[i][j]
+            grid[j, i].value = grid_map[i][j]
     return grid
 
 
@@ -67,8 +70,8 @@ def main():
     experiments = read_probs_file()
 
     for experiment in experiments:
-        print(experiment[0], experiment[1])
-        print(grid[experiment[0], experiment[1]])
+        # print(experiment[0], experiment[1])
+        # print(grid[experiment[0], experiment[1]])
         grid_map = Map(
             grid,
             start=grid[experiment[0], experiment[1]],
@@ -90,7 +93,8 @@ def main():
         # search
         path = search_engine.search(grid_map.start_state, grid_map.goal_state)
         # print the path
-        print(path)
+        # print(grid_map.grid)
+        # print(path)
         statistics_s = search_engine.statistics()
         print(statistics_s["cost"], statistics_s["nodes_expanded"])
     # grid[8, 9].value = 0

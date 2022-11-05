@@ -17,10 +17,12 @@ class TransitionSystem(object):
 
     def successors(self, state):
         """Return a list of (action, next_state) pairs reachable from |state|."""
-        return [(action, next_state)
-                for action in self.actions
-                for next_state in self.states
-                if self.transition_relation(state, action, next_state)]
+        for action in self.actions:
+            if self.transition_relation(state, action)[1]  is not None:
+                yield action, self.transition_relation(state, action)[1]
+            else:
+                continue
+
 
     def is_goal(self, state):
         """Return true if |state| is a goal state."""
@@ -48,6 +50,9 @@ class State(object):
 
     def __eq__(self, other):
         return self.name == other.name
+    
+    def __lt__(self, other):
+        return self.g <= other.g
 
     def __hash__(self):
         return hash(self.name)
@@ -155,7 +160,7 @@ class Map:
     
     def create_transition_relation(self):
         # create the transition relation
-        transition_relation = lambda state, action, next_state: self.transition(state, action, next_state)
+        transition_relation = lambda state, action: self.transition(state, action)
 
         # return the transition relation
         return transition_relation
@@ -191,31 +196,32 @@ class Map:
         # return the cost function
         return cost_function
     
-    def transition(self, state, action, next_state):
+    def transition(self, state, action):
         # get the cell from the state
         cell = state.cell
 
         # get the next cell based on the action
         next_cell = self.get_next_cell(cell, action)
+        next_state = State(str(next_cell), cell=next_cell)
 
         # check if the next cell is valid
         if not self.is_valid_cell(next_cell):
-            return False
+            return False, None
 
         # check if the next cell is the wall
         if self.is_wall(next_cell):
-            return False
+            return False, None
 
         # check if the next cell is the goal
         if next_cell == self.goal:
-            return True
+            return True, next_state
 
         # check if the next cell is the same as the next state
-        if next_cell == next_state.cell:
-            return True
+        if next_cell == next_cell:
+            return True, next_state
 
         # return false if the transition is not valid
-        return False
+        return False, None
     
     def get_next_cell(self, cell, action):
         # get the next cell based on the action
