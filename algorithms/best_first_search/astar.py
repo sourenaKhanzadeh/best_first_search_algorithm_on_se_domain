@@ -18,7 +18,7 @@ class AStar(SearchEngine):
             if self.goal_test(current):
                 self.path = self.reconstruct_path(current)
                 self.actions = self.reconstruct_path_actions(current)
-                self.visited = self.closed + self.open
+                self.visited = self.closed
                 self.cost = current.g
                 self.status = SearchStatus.TERMINATED
                 return self.path, self.actions

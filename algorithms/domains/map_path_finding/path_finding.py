@@ -1,3 +1,5 @@
+from algorithms.domains.map_path_finding.heuristics import *
+
 class TransitionSystem(object):
     """A transition system is a tuple (S, A, T, s0, G) where:
     - S is a set of states
@@ -106,13 +108,8 @@ class CostFunction(object):
         return state.g + 1
 
 
-class Heuristic(object):
-    """A heuristic function maps states to costs."""
-    def __call__(self, state):
-        return 0
-
 class Map:
-    def __init__(self, grid, start, goal):
+    def __init__(self, grid, start, goal, heuristic='zero'):
         self.grid = grid
         self.start = start
         self.goal = goal
@@ -123,7 +120,7 @@ class Map:
         self.start_state = self.transition_system.init
         # set the goal state
         self.goal_state = self.transition_system.goals[0]
-        self.heuristic = self.create_heuristic()
+        self.heuristic = self.create_heuristic(heuristic, goal)
         self.cost_function = self.create_cost_function()
         self.goal_test = self.transition_system.is_goal
 
@@ -177,12 +174,15 @@ class Map:
         # return the goal states
         return goal_states
 
-    def create_heuristic(self):
-        # create a heuristic function
-        heuristic = Heuristic()
+    def create_heuristic(self, heuristic, goal):
+        if heuristic == 'zero':
+            # create a heuristic function
+            return Heuristic()
+        elif heuristic == 'manhattan':
+            return ManhattanHeuristic(goal.x, goal.y)
 
         # return the heuristic function
-        return heuristic
+        return Heuristic()
 
     def create_cost_function(self):
         # create a cost function
