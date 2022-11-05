@@ -1,3 +1,6 @@
+import copy
+import random
+
 class TransitionSystem:
     def __init__(self, states, actions, transition_relation, init, goals):
         self.states = states
@@ -33,16 +36,27 @@ class TransitionSystem:
         return self.successors(*args, **kwds)
 
 class Graph:
-    def __init__(self, nodes, edges):
+    def __init__(self, nodes, edges, outer_edges):
         self.nodes = nodes
         self.edges = edges
+        self.outer_edges = outer_edges
 
     def __str__(self):
         return 'Graph({}, {})'.format(self.nodes, self.edges)
 
     def __repr__(self):
         return self.__str__()
-    
+
+class Modules:
+    def __init__(self, graphs):
+        self.graphs = graphs
+
+    def __str__(self):
+        return 'Modules({})'.format(self.graphs)
+
+    def __repr__(self):
+        return self.__str__()
+
 class Edge:
     def __init__(self, start, end, cost):
         self.start = start
@@ -115,8 +129,8 @@ class CostFunction:
         return self.cost(*args, **kwds)
 
 class SEDomain:
-    def __init__(self, graph, start_state, goal_state): 
-        self.graph = graph
+    def __init__(self, modules, start_state, goal_state): 
+        self.modules = modules
         self.start_state = start_state
         self.goal_state = goal_state
         self.transition_system = self.create_transition_system()
@@ -125,7 +139,7 @@ class SEDomain:
         self.goal_test = self.goal_test
 
     def __str__(self):
-        return 'SE_Domain({}, {})'.format(self.transition_system, self.graph)
+        return 'SE_Domain({}, {})'.format(self.transition_system, self.modules)
 
     def __repr__(self):
         return self.__str__()
@@ -134,7 +148,7 @@ class SEDomain:
         """
         Create a transition system for the graph
         """
-        states = self.graph.nodes
+        states = self.modules
         actions = [Action("delete intra edge"), Action("delete inter edge"), Action("add intra edge"), Action("add inter edge")]
         transition_relation = self.transition_relation
         init = self.start_state
@@ -146,22 +160,74 @@ class SEDomain:
         Return a tuple of (cost, next_state) for a given state and action
         """
         if action == Action("delete intra edge"):
-            for edge in self.graph.edges:
-                if edge.start == state and edge.end == state:
-                    return (edge.cost, None)
+            return self.delete_intra_edge(state)
         elif action == Action("delete inter edge"):
-            for edge in self.graph.edges:
-                if edge.start == state:
-                    return (edge.cost, None)
+            return self.delete_inter_edge(state)
         elif action == Action("add intra edge"):
-            for edge in self.graph.edges:
-                if edge.start == state and edge.end == state:
-                    return (edge.cost, None)
+            return self.add_intra_edge(state)
         elif action == Action("add inter edge"):
-            for edge in self.graph.edges:
-                if edge.start == state:
-                    return (edge.cost, None)
-        return (0, None)
+            return self.add_inter_edge(state)
+        else:
+            return None
+    
+    def delete_intra_edge(self, state):
+        """
+        Delete an intra edge
+        """
+        cost = 1
+        new_state = copy.deepcopy(state)
+        for module in new_state:
+            for graph in module.graphs:
+                if len(graph.edges) > 0:
+                    edge = random.choice(graph.edges)
+                    graph.edges.remove(edge)
+                    return cost, new_state
+        return None
+
+    def delete_inter_edge(self, state):
+        """
+        Delete an inter edge
+        """
+        cost = 1
+        new_state = copy.deepcopy(state)
+        for graph in new_state.graphs:
+            if len(graph.outer_edges) > 0:
+                edge = random.choice(graph.outer_edges)
+                graph.outer_edges.remove(edge)
+                return cost, new_state
+        return None
+
+    def add_intra_edge(self, state):
+        """
+        Add an intra edge
+        """
+        cost = 1
+        new_state = copy.deepcopy(state)
+        for graph in new_state.graphs:
+            if len(graph.nodes) > 1:
+                node1 = random.choice(graph.nodes)
+                node2 = random.choice(graph.nodes)
+                if node1 != node2:
+                    edge = Edge(node1, node2, 1)
+                    graph.edges.append(edge)
+                    return cost, new_state
+        return None
+
+    def add_inter_edge(self, state):
+        """
+        Add an inter edge
+        """
+        cost = 1
+        new_state = copy.deepcopy(state)
+        for graph in new_state.graphs:
+            if len(graph.nodes) > 1:
+                node1 = random.choice(graph.nodes)
+                node2 = random.choice(graph.nodes)
+                if node1 != node2:
+                    edge = Edge(node1, node2, 1)
+                    graph.outer_edges.append(edge)
+                    return cost, new_state
+        return None
 
     def heuristic(self, state):
         """

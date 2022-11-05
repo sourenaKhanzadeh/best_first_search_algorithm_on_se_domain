@@ -14,13 +14,22 @@ def main():
     for i in range(6):
         nodes.append(Node(str(i), cell=i))
 
-    vertices = [Edge(nodes[0], nodes[1], 1),Edge(nodes[0], nodes[2], 1),
-    Edge(nodes[1], nodes[4], 1), Edge(nodes[2], nodes[3], 1), Edge(nodes[4], nodes[3], 1), 
-    Edge(nodes[3], nodes[5], 1)]
+    vertices = [Edge(nodes[0], nodes[1], 1), 
+                Edge(nodes[0], nodes[2], 1),
+                Edge(nodes[5], nodes[1], 1),
+                Edge(nodes[4], nodes[5], 1),
+                Edge(nodes[3], nodes[4], 1),
+                Edge(nodes[3], nodes[2], 1),
+                Edge(nodes[5], nodes[3], 1),
+                Edge(nodes[1], nodes[2], 1),
+    ]
     print(len(vertices))
-    g = Graph(nodes, vertices)
+    g1 = Graph(nodes, [vertices[0], vertices[1]], [])
+    g2 = Graph(nodes, [vertices[3], vertices[4]], [vertices[2], vertices[5]])
+    g3 = Graph(nodes, [vertices[3], vertices[4], vertices[6]], [vertices[6], vertices[7]])
+    g4 = Graph(nodes, [vertices[0], vertices[1], vertices[7]], [])
 
-    se = SEDomain(g, nodes[0], nodes[5])
+    se = SEDomain([g1, g2], [g1, g2], [g3, g4])
 
     search_engine = AStar()
     # set the transition system
