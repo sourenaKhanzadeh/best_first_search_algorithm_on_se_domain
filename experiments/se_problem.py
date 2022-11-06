@@ -10,26 +10,24 @@ from algorithms.best_first_search.astar import *
 
 def main():
     
-    nodes = []
-    for i in range(6):
-        nodes.append(Node(str(i), cell=i))
+    modules = [Module('0', []), Module('1', [])]
+    classes = [Class('0', modules[0]), Class('1', modules[0]), Class('2', modules[0]),
+               Class('3', modules[1]), Class('4', modules[1]), Class('5', modules[1])]
+    for i in range(3):
+        modules[0].classes.append(classes[i])
+    for i in range(3, 6):
+        modules[1].classes.append(classes[i])
+    
+    attributes = [Attribute('0', classes[0], classes[1]), Attribute('1', classes[0], classes[2]),
+                  Attribute('2', classes[3], classes[2]), Attribute('3', classes[4], classes[5]),
+                  Attribute('4', classes[3], classes[4]), Attribute('5', classes[5], classes[1])]
+    goal_attributes = [Attribute('0', classes[0], classes[1]), Attribute('1', classes[0], classes[2]),
+                    Attribute('2', classes[3], classes[2]), Attribute('a', classes[1], classes[2]),
+                    Attribute('a', classes[5], classes[3]),
+                    Attribute('4', classes[3], classes[4]), Attribute('3', classes[4], classes[5]),
+                    Attribute('3', classes[4], classes[5])]
 
-    vertices = [Edge(nodes[0], nodes[1], 1), 
-                Edge(nodes[0], nodes[2], 1),
-                Edge(nodes[5], nodes[1], 1),
-                Edge(nodes[4], nodes[5], 1),
-                Edge(nodes[3], nodes[4], 1),
-                Edge(nodes[3], nodes[2], 1),
-                Edge(nodes[5], nodes[3], 1),
-                Edge(nodes[1], nodes[2], 1),
-    ]
-    print(len(vertices))
-    g1 = Graph(nodes, [vertices[0], vertices[1]], [])
-    g2 = Graph(nodes, [vertices[3], vertices[4]], [vertices[2], vertices[5]])
-    g3 = Graph(nodes, [vertices[3], vertices[4], vertices[6]], [vertices[6], vertices[7]])
-    g4 = Graph(nodes, [vertices[0], vertices[1], vertices[7]], [])
-
-    se = SEDomain([g1, g2], [g1, g2], [g3, g4])
+    se = SEDomain([classes, attributes, len(modules)], [classes, goal_attributes, len(modules)])
 
     search_engine = AStar()
     # set the transition system

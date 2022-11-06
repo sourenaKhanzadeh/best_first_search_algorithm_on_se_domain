@@ -1,5 +1,7 @@
 import copy
 import random
+from typing import List, Tuple, Dict, Set, Optional, Union
+import itertools
 
 class TransitionSystem:
     def __init__(self, states, actions, transition_relation, init, goals):
@@ -23,6 +25,7 @@ class TransitionSystem:
                 yield action, self.transition_relation(state, action)[1]
             else:
                 continue
+        
     def get_action_cost(self, state, action):
         """
         Return g cost of action
@@ -35,49 +38,13 @@ class TransitionSystem:
     def __call__(self, *args, **kwds) :
         return self.successors(*args, **kwds)
 
-class Graph:
-    def __init__(self, nodes, edges, outer_edges):
-        self.nodes = nodes
-        self.edges = edges
-        self.outer_edges = outer_edges
-
-    def __str__(self):
-        return 'Graph({}, {})'.format(self.nodes, self.edges)
-
-    def __repr__(self):
-        return self.__str__()
-
-class Modules:
-    def __init__(self, graphs):
-        self.graphs = graphs
-
-    def __str__(self):
-        return 'Modules({})'.format(self.graphs)
-
-    def __repr__(self):
-        return self.__str__()
-
-class Edge:
-    def __init__(self, start, end, cost):
-        self.start = start
-        self.end = end
-        self.cost = cost
-
-    def __str__(self):
-        return 'Edge({}, {}, {})'.format(self.start, self.end, self.cost)
-
-    def __repr__(self):
-        return self.__str__()
-
-class Node:
-    def __init__(self, name, cell=None, parent = None, g = 1):
+class Class:
+    def __init__(self, name, module):
         self.name = name
-        self.g = g
-        self.parent = parent
-        self.cell = cell
+        self.module = module
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.module})"
 
     def __repr__(self):
         return self.name
@@ -89,6 +56,77 @@ class Node:
             return self.name == other
         else:
             return False
+
+    def __hash__(self):
+        return hash(self.name)
+
+class Module:
+    def __init__(self, name, classes):
+        self.name = name
+        self.classes = classes
+
+    def __str__(self):
+        return f"{self.name}: {self.classes}"
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __eq__(self, other):
+        if type(other) == type(self):
+            return self.name == other.name
+        elif type(other) == list:
+            return self.name == other
+        else:
+            return False
+
+    def __hash__(self):
+        return hash(self.name)
+
+class Attribute:
+    def __init__(self, name, class1, class2):
+        self.name = name
+        self.class1 = class1
+        self.class2 = class2
+
+    def __str__(self):
+        return f"{self.name} : {self.class1} -> {self.class2}"
+
+    def __repr__(self):
+        return f"{self.name} : {self.class1} -> {self.class2}"
+
+    def __eq__(self, other):
+        if type(other) == type(self):
+            return self.name == other.name
+        elif type(other) == list:
+            return self.name == other
+        else:
+            return False
+
+    def __hash__(self):
+        return hash(self.name)
+
+class State:
+    def __init__(self, name, cell: List[Union[List[Class], List[Attribute], int]]=None, parent = None, g = 1):
+        self.name = name
+        self.g = g
+        self.parent = parent
+        self.cell = cell
+
+    def __str__(self):
+        return f"{self.name}"
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __eq__(self, other):
+        if type(other) == type(self):
+            return self.name == other.name
+        elif type(other) == list:
+            return self.name == other
+        else:
+            return False
+    def __iter__(self):
+        return self.cell.__iter__()
 
     def __hash__(self):
         return hash(self.name)
@@ -129,17 +167,17 @@ class CostFunction:
         return self.cost(*args, **kwds)
 
 class SEDomain:
-    def __init__(self, modules, start_state, goal_state): 
-        self.modules = modules
-        self.start_state = start_state
-        self.goal_state = goal_state
+    def __init__(self, start_state, goal_state):
+        self.start_state = State(str(start_state), cell=start_state)
+        self.goal_state = State(str(goal_state), cell=goal_state)
+        self.states = [self.start_state, self.goal_state] 
         self.transition_system = self.create_transition_system()
         self.heuristic = self.heuristic
         self.cost_function = CostFunction(self.get_action_cost)
         self.goal_test = self.goal_test
 
     def __str__(self):
-        return 'SE_Domain({}, {})'.format(self.transition_system, self.modules)
+        return 'SE_Domain({}, {})'.format(self.transition_system, self.states)
 
     def __repr__(self):
         return self.__str__()
@@ -148,12 +186,12 @@ class SEDomain:
         """
         Create a transition system for the graph
         """
-        states = self.modules
+        # self.states = self.create_states()
         actions = [Action("delete intra edge"), Action("delete inter edge"), Action("add intra edge"), Action("add inter edge")]
         transition_relation = self.transition_relation
         init = self.start_state
         goals = self.goal_state
-        return TransitionSystem(states, actions, transition_relation, init, goals)
+        return TransitionSystem(self.states, actions, transition_relation, init, goals)
 
     def transition_relation(self, state, action):
         """
@@ -168,66 +206,103 @@ class SEDomain:
         elif action == Action("add inter edge"):
             return self.add_inter_edge(state)
         else:
-            return None
+            return None, None
     
     def delete_intra_edge(self, state):
         """
         Delete an intra edge
         """
-        cost = 1
-        new_state = copy.deepcopy(state)
-        for module in new_state:
-            for graph in module.graphs:
-                if len(graph.edges) > 0:
-                    edge = random.choice(graph.edges)
-                    graph.edges.remove(edge)
-                    return cost, new_state
-        return None
+        cell = state.cell
+        # check if there is an intra edge
+        if len(cell[0]) == 0:
+            return None, None
+        
+        for c in cell[1]:
+            if c.class1.module == c.class2.module:
+                # delete intra edge
+                new_cell = [cell[0], cell[1][:], cell[2]]
+                new_cell[1].remove(c)
+                new_state = State(str(new_cell), cell=new_cell)
+                return 1, new_state
+        return None, None
 
     def delete_inter_edge(self, state):
         """
         Delete an inter edge
         """
-        cost = 1
-        new_state = copy.deepcopy(state)
-        for graph in new_state.graphs:
-            if len(graph.outer_edges) > 0:
-                edge = random.choice(graph.outer_edges)
-                graph.outer_edges.remove(edge)
-                return cost, new_state
-        return None
+        cell = state.cell
+        # check if there is an intra edge
+        if len(cell[0]) == 0:
+            return None, None
+        
+        for c in cell[1]:
+            if c.class1.module != c.class2.module:
+                # delete intra edge
+                new_cell = [cell[0], cell[1][:], cell[2]]
+                new_cell[1].remove(c)
+                new_state = State(str(new_cell), cell=new_cell)
+                return 1, new_state
+        return None, None
 
+                    
     def add_intra_edge(self, state):
         """
         Add an intra edge
         """
-        cost = 1
-        new_state = copy.deepcopy(state)
-        for graph in new_state.graphs:
-            if len(graph.nodes) > 1:
-                node1 = random.choice(graph.nodes)
-                node2 = random.choice(graph.nodes)
-                if node1 != node2:
-                    edge = Edge(node1, node2, 1)
-                    graph.edges.append(edge)
-                    return cost, new_state
-        return None
+        cell = state.cell
+        
+        # check if there is an intra edge
+        for classes in cell[0]:
+            for classes2 in cell[0]:
+                if classes.module == classes2.module:
+                    for attribute in cell[1]:
+                        if attribute.class1 == classes and attribute.class2 == classes2:
+                            return None, None
+                    new_cell = [cell[0], cell[1][:], cell[2]]
+                    new_cell[1].append(Attribute("a", classes, classes2))
+                    new_state = State(str(new_cell), cell=new_cell)
+                    return 1, new_state
+        return None, None
 
+    
     def add_inter_edge(self, state):
         """
         Add an inter edge
         """
-        cost = 1
-        new_state = copy.deepcopy(state)
-        for graph in new_state.graphs:
-            if len(graph.nodes) > 1:
-                node1 = random.choice(graph.nodes)
-                node2 = random.choice(graph.nodes)
-                if node1 != node2:
-                    edge = Edge(node1, node2, 1)
-                    graph.outer_edges.append(edge)
-                    return cost, new_state
-        return None
+        cell = state.cell
+        # check if there is an inter edge
+        if len(cell[1]) == 0:
+            return None, None
+
+        for classes in cell[0]:
+            for classes2 in cell[0]:
+                if classes.module != classes2.module:
+                    for attribute in cell[1]:
+                        if attribute.class1 == classes and attribute.class2 == classes2:
+                            return None, None
+                    new_cell = [cell[0], cell[1][:], cell[2]]
+                    new_cell[1].append(Attribute("a", classes, classes2))
+                    new_state = State(str(new_cell), cell=new_cell)
+                    return 1, new_state
+        return None, None
+        
+    def create_states(self):
+        """
+        Create all possible states for the graph
+        """
+        states = []
+        # create all possible attributes
+        attributes = []
+        for classes in self.start_state.cell[0]:
+            for classes2 in self.start_state.cell[0]:
+                attributes.append(Attribute("a", classes, classes2))
+        # create all possible combinations of attributes
+        for i in range(len(attributes)+1):
+            for subset in itertools.combinations(attributes, i):
+                new_cell = [self.start_state.cell[0], list(subset), self.start_state.cell[2]]
+                new_state = State(str(new_cell), cell=new_cell)
+                states.append(new_state)
+        return states
 
     def heuristic(self, state):
         """
@@ -238,13 +313,6 @@ class SEDomain:
     def goal_test(self, state):
         return self.is_goal(state)
 
-    def successors(self, state):
-        """Return a list of (action, next_state) pairs reachable from |state|."""
-        for action in self.transition_system.actions:
-            if self.transition_system.transition_relation(state, action)[1]  is not None:
-                yield action, self.transition_system.transition_relation(state, action)[1]
-            else:
-                continue
     def get_action_cost(self, state, action):
         """
         Return g cost of action
