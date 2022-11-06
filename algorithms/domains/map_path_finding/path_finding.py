@@ -8,18 +8,19 @@ class TransitionSystem(object):
     - s0 is the initial state
     - G is a set of goal states
     """
-    def __init__(self, states, actions, transition_relation, init, goals):
+    def __init__(self, states, actions, transition_relation, init, goals, type='connect-4'):
         self.states = states
         self.actions = actions
         self.transition_relation = transition_relation
         self.init = init
         self.goals = goals
+        self.type = type
 
     def successors(self, state):
         """Return a list of (action, next_state) pairs reachable from |state|."""
         for action in self.actions:
-            if self.transition_relation(state, action)[1]  is not None:
-                yield action, self.transition_relation(state, action)[1]
+            if self.transition_relation(state, action, self.type)[1]  is not None:
+                yield action, self.transition_relation(state, action, self.type)[1]
             else:
                 continue
 
@@ -114,10 +115,11 @@ class CostFunction(object):
 
 
 class Map:
-    def __init__(self, grid, start, goal, heuristic='zero'):
+    def __init__(self, grid, start, goal, heuristic='zero', type='connect-4'):
         self.grid = grid
         self.start = start
         self.goal = goal
+        self.type = type
 
         # create the transition system
         self.transition_system = self.create_transition_system()
@@ -136,7 +138,8 @@ class Map:
             actions=self.create_actions(),
             transition_relation=self.create_transition_relation(),
             init=self.create_initial_state(),
-            goals=self.create_goal_states()
+            goals=self.create_goal_states(),
+            type=self.type
         )
 
         # return the transition system
@@ -153,14 +156,16 @@ class Map:
 
     def create_actions(self):
         # create the actions
-        actions = [Action('up'), Action('down'), Action('left'), Action('right')]
-
+        if self.type == 'connect-4':
+            actions = [Action('up'), Action('down'), Action('left'), Action('right')]
+        elif self.type == 'octile':
+            actions = [Action('up'), Action('down'), Action('left'), Action('right'), Action('up-left'), Action('up-right'), Action('down-left'), Action('down-right')]
         # return the actions
         return actions
     
     def create_transition_relation(self):
         # create the transition relation
-        transition_relation = lambda state, action: self.transition(state, action)
+        transition_relation = lambda state, action, type: self.transition(state, action, type)
 
         # return the transition relation
         return transition_relation
@@ -196,12 +201,15 @@ class Map:
         # return the cost function
         return cost_function
     
-    def transition(self, state, action):
+    def transition(self, state, action, type="connect-4"):
         # get the cell from the state
         cell = state.cell
 
         # get the next cell based on the action
-        next_cell = self.get_next_cell(cell, action)
+        if type == 'connect-4':
+            next_cell = self.get_next_cell(cell, action)
+        elif type == 'octile':
+            next_cell = self.get_next_cell_octile(cell, action)
         next_state = State(str(next_cell), cell=next_cell)
 
         # check if the next cell is valid
@@ -233,6 +241,27 @@ class Map:
             return self.grid[cell.x - 1, cell.y]
         elif action == Action('right') and cell.x < self.grid.width - 1:
             return self.grid[cell.x + 1, cell.y]
+        else:
+            return cell
+    
+    def get_next_cell_octile(self, cell, action):
+        # get the next cell based on the action
+        if action == Action('up') and cell.y > 0:
+            return self.grid[cell.x, cell.y - 1]
+        elif action == Action('down') and cell.y < self.grid.height - 1:
+            return self.grid[cell.x, cell.y + 1]
+        elif action == Action('left') and cell.x > 0:
+            return self.grid[cell.x - 1, cell.y]
+        elif action == Action('right') and cell.x < self.grid.width - 1:
+            return self.grid[cell.x + 1, cell.y]
+        elif action == Action('up-left') and cell.x > 0 and cell.y > 0:
+            return self.grid[cell.x - 1, cell.y - 1]
+        elif action == Action('up-right') and cell.x < self.grid.width - 1 and cell.y > 0:
+            return self.grid[cell.x + 1, cell.y - 1]
+        elif action == Action('down-left') and cell.x > 0 and cell.y < self.grid.height - 1:
+            return self.grid[cell.x - 1, cell.y + 1]
+        elif action == Action('down-right') and cell.x < self.grid.width - 1 and cell.y < self.grid.height - 1:
+            return self.grid[cell.x + 1, cell.y + 1]
         else:
             return cell
 

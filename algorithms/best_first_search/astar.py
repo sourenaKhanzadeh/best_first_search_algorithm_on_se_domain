@@ -31,7 +31,7 @@ class AStar(SearchEngine):
                     child.g = self.cost_function(current, action)
                     self.open.append(child)
                 else:
-                    if child.g <= current.g:
+                    if child.g < current.g:
                         self.open.remove(child)
                         child.parent = current
                         child.action = action

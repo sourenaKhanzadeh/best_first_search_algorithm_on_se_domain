@@ -105,7 +105,8 @@ def main():
             grid,
             start=grid[experiment[0], experiment[1]],
             goal=grid[experiment[2], experiment[3]],
-            heuristic= 'manhattan'
+            heuristic= 'manhattan',
+            type='connect-4'
         )
         search_engine = AStar(1)
         # set the transition system
@@ -124,6 +125,7 @@ def main():
         # print the path
         # print(grid_map.grid)
         # print(path)
+        # print(path[1])
         statistics_s = search_engine.statistics()
         print(statistics_s["cost"], statistics_s["nodes_expanded"])
         if USE_CSV:
