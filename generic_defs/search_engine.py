@@ -25,6 +25,7 @@ class SearchEngine(ABC):
         self.path = []
         self.visited = []
         self.cost = 0
+        self.number_of_expanded_nodes = 0
         
     def statistics(self):
         return {
@@ -32,7 +33,7 @@ class SearchEngine(ABC):
             "visited": self.visited,
             "cost": self.cost,
             "status": self.status,
-            "nodes_expanded": len(self.visited),
+            "nodes_expanded": self.number_of_expanded_nodes,
             "nodes_generated": len(self.visited) + len(self.open),
             "unique_nodes_generated": len(self.visited) + len(self.open) - len(self.closed),
             "max_nodes_in_memory": len(self.open) + len(self.closed),

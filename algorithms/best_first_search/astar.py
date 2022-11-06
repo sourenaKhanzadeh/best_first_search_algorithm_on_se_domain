@@ -15,6 +15,7 @@ class AStar(SearchEngine):
         while self.open:
             current = self.open.pop(0)
             self.closed.append(current)
+            self.number_of_expanded_nodes += 1
             if self.goal_test(current):
                 self.path = self.reconstruct_path(current)
                 self.actions = self.reconstruct_path_actions(current)
@@ -41,7 +42,7 @@ class AStar(SearchEngine):
             # put the current fscore in the heap
             heapq.heapify(self.open)
             # get the lowest fscore from the heap
-            self.open = heapq.nsmallest(len(self.open), self.open, key=lambda x: x.g + self.w * self.heuristic(x))
+            self.open = heapq.nsmallest(len(self.open), self.open, key=lambda x: (x.g + self.w * self.heuristic(x), -x.g))
             # self.open.sort(key=lambda x: x.g + self.w * self.heuristic(x))
         self.status = SearchStatus.TERMINATED
         return None
