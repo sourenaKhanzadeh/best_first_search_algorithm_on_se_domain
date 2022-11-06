@@ -20,7 +20,9 @@ class TransitionSystem:
         """Return a list of (action, next_state) pairs reachable from |state|."""
         for action in self.actions:
             if self.transition_relation(state, action)[1]  is not None:
-                yield action, self.transition_relation(state, action)[1]
+                yield action, State(str(self.transition_relation(state, action)[1]),
+                cell=self.transition_relation(state, action)[1], 
+                g=self.transition_relation(state, action)[0])
             else:
                 continue
     def get_action_cost(self, state, action):
@@ -93,6 +95,32 @@ class Node:
     def __hash__(self):
         return hash(self.name)
 
+class State:
+    def __init__(self, name, cell=None, parent = None, g = 1):
+        self.name = name
+        self.g = g
+        self.parent = parent
+        self.cell = cell
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.name
+
+    def __eq__(self, other):
+        if type(other) == type(self):
+            return self.name == other.name
+        elif type(other) == list:
+            return self.name == other
+        else:
+            return False
+    def __iter__(self):
+        return self.cell.__iter__()
+
+    def __hash__(self):
+        return hash(self.name)
+
 class Action:
     def __init__(self, name):
         self.name = name
@@ -131,8 +159,8 @@ class CostFunction:
 class SEDomain:
     def __init__(self, modules, start_state, goal_state): 
         self.modules = modules
-        self.start_state = start_state
-        self.goal_state = goal_state
+        self.start_state = State(str(start_state), cell=start_state)
+        self.goal_state = State(str(goal_state), cell=goal_state)
         self.transition_system = self.create_transition_system()
         self.heuristic = self.heuristic
         self.cost_function = CostFunction(self.get_action_cost)
@@ -176,13 +204,13 @@ class SEDomain:
         """
         cost = 1
         new_state = copy.deepcopy(state)
-        for module in new_state:
-            for graph in module.graphs:
-                if len(graph.edges) > 0:
-                    edge = random.choice(graph.edges)
-                    graph.edges.remove(edge)
-                    return cost, new_state
-        return None
+        # get a random intra edge
+        for graph in new_state.cell:
+            if len(graph.edges) > 0:
+                edge = random.choice(graph.edges)
+                graph.edges.remove(edge)
+                return cost, new_state
+        return None, None
 
     def delete_inter_edge(self, state):
         """
@@ -190,12 +218,12 @@ class SEDomain:
         """
         cost = 1
         new_state = copy.deepcopy(state)
-        for graph in new_state.graphs:
+        for graph in new_state:
             if len(graph.outer_edges) > 0:
                 edge = random.choice(graph.outer_edges)
                 graph.outer_edges.remove(edge)
                 return cost, new_state
-        return None
+        return None, None
 
     def add_intra_edge(self, state):
         """
@@ -203,7 +231,7 @@ class SEDomain:
         """
         cost = 1
         new_state = copy.deepcopy(state)
-        for graph in new_state.graphs:
+        for graph in new_state:
             if len(graph.nodes) > 1:
                 node1 = random.choice(graph.nodes)
                 node2 = random.choice(graph.nodes)
@@ -211,7 +239,7 @@ class SEDomain:
                     edge = Edge(node1, node2, 1)
                     graph.edges.append(edge)
                     return cost, new_state
-        return None
+        return None, None
 
     def add_inter_edge(self, state):
         """
@@ -219,7 +247,7 @@ class SEDomain:
         """
         cost = 1
         new_state = copy.deepcopy(state)
-        for graph in new_state.graphs:
+        for graph in new_state:
             if len(graph.nodes) > 1:
                 node1 = random.choice(graph.nodes)
                 node2 = random.choice(graph.nodes)
@@ -227,7 +255,7 @@ class SEDomain:
                     edge = Edge(node1, node2, 1)
                     graph.outer_edges.append(edge)
                     return cost, new_state
-        return None
+        return None, None
 
     def heuristic(self, state):
         """
@@ -238,13 +266,6 @@ class SEDomain:
     def goal_test(self, state):
         return self.is_goal(state)
 
-    def successors(self, state):
-        """Return a list of (action, next_state) pairs reachable from |state|."""
-        for action in self.transition_system.actions:
-            if self.transition_system.transition_relation(state, action)[1]  is not None:
-                yield action, self.transition_system.transition_relation(state, action)[1]
-            else:
-                continue
     def get_action_cost(self, state, action):
         """
         Return g cost of action
