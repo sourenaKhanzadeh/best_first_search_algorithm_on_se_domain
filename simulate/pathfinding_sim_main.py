@@ -55,5 +55,7 @@ if __name__ == "__main__":
     for a in action:
         assert type(s.scene[0]) == GridSM, "scene[0] is not a GridSM"
         s.scene[0].path.policy(a)
+    for state in search_engine.visited:
+        s.scene[0].path.visited(state.cell.x, state.cell.y)
     # print the path
     s.run()    

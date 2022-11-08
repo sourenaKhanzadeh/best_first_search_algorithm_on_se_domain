@@ -50,9 +50,18 @@ class Path:
         self.height = height
         self.trail = []
         self.temp = []
+        self.node_expanded = []
         self.cell_size = cell_size
     
     def draw(self):
+        for i in self.node_expanded:
+            # make the node expanded depending on the cell size
+            # make the node expnasion lower opacity
+            rect = pygame.Surface((self.cell_size, self.cell_size))
+            rect.set_alpha(50)
+            rect.fill((255, 0, 0))
+            self.screen.blit(rect, (i[0] * self.cell_size, i[1] * self.cell_size))
+            # pygame.draw.rect(self.screen, (255, 0, 0), (i[0] * self.cell_size, i[1] * self.cell_size, self.width, self.height))
         for i in self.trail:
             pygame.draw.rect(self.screen, (0, 0, 255), (i[0], i[1], self.width, self.height))
         pygame.draw.rect(self.screen, (0, 255, 0), (self.x, self.y, self.width, self.height))
@@ -74,6 +83,9 @@ class Path:
             self.x -= self.width
         elif action.name == 'right':
             self.x += self.width
+
+    def visited(self, x, y):
+        self.node_expanded.append((x, y))
 
 class GridSM:
     def __init__(self, settings, screen, walls, cell_size=20, start=None, goal=None):
