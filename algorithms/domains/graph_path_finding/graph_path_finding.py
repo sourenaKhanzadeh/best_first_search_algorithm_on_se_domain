@@ -16,6 +16,9 @@ class Node:
 
     def __hash__(self):
         return hash(self.val)
+    
+    def __lt__(self, other):
+        return self.g <= other.g
 
 
 class Graph():

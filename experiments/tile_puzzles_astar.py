@@ -7,6 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from generic_defs.search_engine import *
 from algorithms.domains.tiles_domain.tiles_domain import *
 from algorithms.best_first_search.astar import *
+from algorithms.best_first_search.idastar import *
 
 def main():
     # create a tile puzzle

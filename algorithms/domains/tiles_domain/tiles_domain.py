@@ -57,6 +57,9 @@ class State:
 
     def __hash__(self):
         return hash(self.name)
+    
+    def __lt__(self, other):
+        return self.g < other.g
 
 class Action:
     def __init__(self, name):
