@@ -18,16 +18,16 @@ def main():
     for i in range(3, 6):
         modules[1].classes.append(classes[i])
     
-    attributes = [Attribute('0', classes[0], classes[1]), Attribute('1', classes[0], classes[2]),
-                  Attribute('2', classes[3], classes[2]), Attribute('3', classes[4], classes[5]),
-                  Attribute('4', classes[3], classes[4]), Attribute('5', classes[5], classes[1])]
-    goal_attributes = [Attribute('0', classes[0], classes[1]), Attribute('1', classes[0], classes[2]),
-                    Attribute('2', classes[3], classes[2]), Attribute('a', classes[1], classes[2]),
+    attributes = [Attribute('a', classes[0], classes[1]), Attribute('a', classes[0], classes[2]),
+                  Attribute('a', classes[3], classes[2]), Attribute('a', classes[4], classes[5]),
+                  Attribute('a', classes[3], classes[4]), Attribute('a', classes[5], classes[1])]
+    goal_attributes = [Attribute('a', classes[0], classes[1]), Attribute('a', classes[0], classes[2]),
+                    Attribute('a', classes[3], classes[2]), Attribute('a', classes[1], classes[2]),
                     Attribute('a', classes[5], classes[3]),
-                    Attribute('4', classes[3], classes[4]), Attribute('3', classes[4], classes[5]),
-                    Attribute('3', classes[4], classes[5])]
+                    Attribute('a', classes[3], classes[4]), Attribute('a', classes[4], classes[5]),
+                    Attribute('a', classes[4], classes[5])]
 
-    se = SEDomain([classes, attributes, len(modules)], [classes, goal_attributes, len(modules)])
+    se = SEDomain([classes, attributes, len(modules)], [classes, goal_attributes, len(modules)], "h1")
 
     search_engine = AStar()
     # set the transition system

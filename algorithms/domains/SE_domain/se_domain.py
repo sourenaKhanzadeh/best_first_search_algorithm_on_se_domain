@@ -1,7 +1,7 @@
-import copy
-import random
 from typing import List, Tuple, Dict, Set, Optional, Union
 import itertools
+from .heuristic import *
+
 
 class TransitionSystem:
     def __init__(self, states, actions, transition_relation, init, goals):
@@ -33,7 +33,7 @@ class TransitionSystem:
         return self.transition_relation(state, action)[0]
 
     def is_goal(self, state):
-        return state in self.goals
+        return state[1] in self.goals[1]
     
     def __call__(self, *args, **kwds) :
         return self.successors(*args, **kwds)
@@ -44,7 +44,7 @@ class Class:
         self.module = module
 
     def __str__(self):
-        return f"{self.name} ({self.module})"
+        return f"{self.name}"
 
     def __repr__(self):
         return self.name
@@ -89,10 +89,10 @@ class Attribute:
         self.class2 = class2
 
     def __str__(self):
-        return f"{self.name} : {self.class1} -> {self.class2}"
+        return f"{self.class1} -> {self.class2}"
 
     def __repr__(self):
-        return f"{self.name} : {self.class1} -> {self.class2}"
+        return f"{self.class1} -> {self.class2}"
 
     def __eq__(self, other):
         if type(other) == type(self):
@@ -125,6 +125,9 @@ class State:
             return self.name == other
         else:
             return False
+    def __lt__(self, other):
+        return self.g < other.g
+
     def __iter__(self):
         return self.cell.__iter__()
 
@@ -167,12 +170,12 @@ class CostFunction:
         return self.cost(*args, **kwds)
 
 class SEDomain:
-    def __init__(self, start_state, goal_state):
+    def __init__(self, start_state, goal_state, heuristic = 'h1'):
         self.start_state = State(str(start_state), cell=start_state)
         self.goal_state = State(str(goal_state), cell=goal_state)
         self.states = [self.start_state, self.goal_state] 
         self.transition_system = self.create_transition_system()
-        self.heuristic = self.heuristic
+        self.heuristic = self.heuristic(self.states[0], heuristic)
         self.cost_function = CostFunction(self.get_action_cost)
         self.goal_test = self.goal_test
 
@@ -186,7 +189,7 @@ class SEDomain:
         """
         Create a transition system for the graph
         """
-        # self.states = self.create_states()
+        self.states = self.create_states()
         actions = [Action("delete intra edge"), Action("delete inter edge"), Action("add intra edge"), Action("add inter edge")]
         transition_relation = self.transition_relation
         init = self.start_state
@@ -223,7 +226,7 @@ class SEDomain:
                 new_cell = [cell[0], cell[1][:], cell[2]]
                 new_cell[1].remove(c)
                 new_state = State(str(new_cell), cell=new_cell)
-                return 1, new_state
+                return state.g + 1, new_state
         return None, None
 
     def delete_inter_edge(self, state):
@@ -241,7 +244,7 @@ class SEDomain:
                 new_cell = [cell[0], cell[1][:], cell[2]]
                 new_cell[1].remove(c)
                 new_state = State(str(new_cell), cell=new_cell)
-                return 1, new_state
+                return state.g + 1, new_state
         return None, None
 
                     
@@ -261,7 +264,7 @@ class SEDomain:
                     new_cell = [cell[0], cell[1][:], cell[2]]
                     new_cell[1].append(Attribute("a", classes, classes2))
                     new_state = State(str(new_cell), cell=new_cell)
-                    return 1, new_state
+                    return state.g + 1, new_state
         return None, None
 
     
@@ -283,7 +286,7 @@ class SEDomain:
                     new_cell = [cell[0], cell[1][:], cell[2]]
                     new_cell[1].append(Attribute("a", classes, classes2))
                     new_state = State(str(new_cell), cell=new_cell)
-                    return 1, new_state
+                    return state.g + 1, new_state
         return None, None
         
     def create_states(self):
@@ -291,24 +294,34 @@ class SEDomain:
         Create all possible states for the graph
         """
         states = []
-        # create all possible attributes
         attributes = []
+        states.append(self.start_state)
+
+        # connect all classes with each other
+        # sample all possible combinations of classes
         for classes in self.start_state.cell[0]:
             for classes2 in self.start_state.cell[0]:
                 attributes.append(Attribute("a", classes, classes2))
-        # create all possible combinations of attributes
-        for i in range(len(attributes)+1):
-            for subset in itertools.combinations(attributes, i):
-                new_cell = [self.start_state.cell[0], list(subset), self.start_state.cell[2]]
+        # sample all possible combinations of attributes
+        for j in range(1, len(self.start_state.cell[1])):
+            for i in itertools.combinations(attributes, j):
+                new_cell = [self.start_state.cell[0], [i], self.start_state.cell[2]]
                 new_state = State(str(new_cell), cell=new_cell)
                 states.append(new_state)
+                        
+        # make sure that the goal state is in the list of states
         return states
 
-    def heuristic(self, state):
+    def heuristic(self, state, type="h1"):
         """
         Return the heuristic value of a state
         """
-        return 0
+        if type == "h1":
+            return Heuristic(state)
+        elif type == "h2":
+            return CouplingHeuristic(state.cell[0], state.cell[1], state.cell[2])
+        
+        return Heuristic(state)
     
     def goal_test(self, state):
         return self.is_goal(state)
@@ -320,7 +333,10 @@ class SEDomain:
         return self.transition_system.transition_relation(state, action)[0]
 
     def is_goal(self, state):
-        return state == self.transition_system.goals
+        for attr in state.cell[1]:
+            if attr != self.goal_state.cell[1]:
+                return False
+        return True
     
     def __call__(self, *args, **kwds) :
         return self.successors(*args, **kwds)
