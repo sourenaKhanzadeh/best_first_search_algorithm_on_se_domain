@@ -8,13 +8,14 @@ from generic_defs.search_engine import *
 from algorithms.domains.tiles_domain.tiles_domain import *
 from algorithms.best_first_search.astar import *
 from algorithms.best_first_search.idastar import *
+from algorithms.best_first_search.egreedy import *
 
 def main():
     # create a tile puzzle
     tile_puzzle = TilePuzzle(3, init=[1, 5, 2, 0, 3, 6, 7, 8, 4], goals=[[1, 2, 3, 4, 5, 6, 7, 8, 0]])
 
     # create a search engine
-    search_engine = AStar(1)
+    search_engine = EGBFS(1)
     # set the transition system
     search_engine.setTransitionSystem(tile_puzzle.to_transition_system())
     # set the heuristic
