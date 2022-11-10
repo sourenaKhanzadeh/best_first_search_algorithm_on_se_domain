@@ -1,6 +1,7 @@
 from typing import List, Tuple, Dict, Set, Optional, Union
 import itertools
 from .heuristic import *
+import random
 
 
 class TransitionSystem:
@@ -21,8 +22,9 @@ class TransitionSystem:
     def successors(self, state):
         """Return a list of (action, next_state) pairs reachable from |state|."""
         for action in self.actions:
-            if self.transition_relation(state, action)[1]  is not None:
-                yield action, self.transition_relation(state, action)[1]
+            cost, next_state = self.transition_relation(state, action)
+            if next_state is not None and cost is not None:
+                yield action, next_state
             else:
                 continue
         
@@ -30,7 +32,7 @@ class TransitionSystem:
         """
         Return g cost of action
         """
-        return self.transition_relation(state, action)[0]
+        return state.g + 1
 
     def is_goal(self, state):
         return state[1] in self.goals[1]
@@ -170,7 +172,7 @@ class CostFunction:
         return self.cost(*args, **kwds)
 
 class SEDomain:
-    def __init__(self, start_state, goal_state, heuristic = 'h1'):
+    def __init__(self, start_state, goal_state, heuristic = 'h1', aggression = 1):
         self.start_state = State(str(start_state), cell=start_state)
         self.goal_state = State(str(goal_state), cell=goal_state)
         self.states = [self.start_state, self.goal_state] 
@@ -178,7 +180,14 @@ class SEDomain:
         self.heuristic = self.heuristic(self.states[0], heuristic)
         self.cost_function = CostFunction(self.get_action_cost)
         self.goal_test = self.goal_test
-
+        self.delete_trail = []
+        self.add_trail = []
+        self.aggression = aggression
+        self.total_goal = 0
+        for c in self.goal_state.cell[0]:
+            for c2 in self.goal_state.cell[0]:
+                if c != c2 and c.module == c2.module:
+                    self.total_goal += 1
     def __str__(self):
         return 'SE_Domain({}, {})'.format(self.transition_system, self.states)
 
@@ -191,7 +200,7 @@ class SEDomain:
         """
         self.states = self.create_states()
         # actions = [Action("delete intra edge"), Action("delete inter edge"), Action("add intra edge"), Action("add inter edge")]
-        actions = [Action("add intra edge"), Action("delete inter edge")]
+        actions = [ Action("add intra edge"), Action("delete inter edge")]
         transition_relation = self.transition_relation
         init = self.start_state
         goals = self.goal_state
@@ -212,6 +221,7 @@ class SEDomain:
         else:
             return None, None
     
+
     def delete_intra_edge(self, state):
         """
         Delete an intra edge
@@ -223,12 +233,13 @@ class SEDomain:
             return None, None
         
         for c in cell[1]:
-            if c.class1.module == c.class2.module:
+            if c.class1.module == c.class2.module and c not in self.delete_trail:
                 # delete intra edge
                 new_cell = [cell[0], cell[1][:], cell[2]]
                 new_cell[1].remove(c)
+                self.delete_trail.append(c)
                 new_state = State(str(new_cell), cell=new_cell)
-                return state.g + 1, new_state
+                return state.g + 10, new_state
         return None, None
 
     def delete_inter_edge(self, state):
@@ -252,10 +263,14 @@ class SEDomain:
         for i in inter_edges.values():
             if len(i) > 1:
                 # delete inter edge
-                new_cell = [cell[0], cell[1][:], cell[2]]
-                new_cell[1].remove(i[0])
-                new_state = State(str(new_cell), cell=new_cell)
-                return state.g + 1, new_state
+                for j in i:
+                    if j not in self.delete_trail:
+                        self.delete_trail.append(j)
+                        new_cell = [cell[0], cell[1][:], cell[2]]
+                        new_cell[1].remove(j)
+                        new_state = State(str(new_cell), cell=new_cell)
+                        return state.g + 1, new_state
+
         return None, None
 
                     
@@ -264,19 +279,45 @@ class SEDomain:
         Add an intra edge
         """
         cell = state.cell
+        # if len(cell[1]) > len(self.goal_state.cell[1]):
+            # return None, None
+
+        # # check if there is an intra edge
+        # for classes in cell[0]:
+        #     for classes2 in cell[0]:
+        #         if classes.module == classes2.module and classes != classes2:
+        #             for attribute in cell[1]:
+        #                 if type(attribute) == tuple and len(attribute) == 1:
+        #                     attribute = attribute[0]
+        #                 # classes and classes2 in the same module are checked for presence of link in attributes.
+        #                 # If not exists, add
+        #                 if not (attribute.class1 == classes and attribute.class2 == classes2) and Attribute("a", classes, classes2) not in cell[1]:
+        #                     # and Attribute("a", classes2, classes) not in self.add_trail:
+        #                     new_cell = [cell[0], cell[1][:], cell[2]]
+        #                     new_cell[1].append(Attribute("a", classes, classes2))
+        #                     # self.add_trail.append(Attribute("a", classes, classes2))
+        #                     new_state = State(str(new_cell), cell=new_cell)
+        #                     return state.g + 1, new_state
         
-        # check if there is an intra edge
+        
+        # add every batch of classes in the same module
         for classes in cell[0]:
             for classes2 in cell[0]:
                 if classes.module == classes2.module and classes != classes2:
-                    for attribute in cell[1]:
-                        # classes and classes2 in the same module are checked for presence of link in attributes.
-                        # If not exists, add
-                        if not (attribute.class1 == classes and attribute.class2 == classes2):
-                            new_cell = [cell[0], cell[1][:], cell[2]]
-                            new_cell[1].append(Attribute("a", classes, classes2))
-                            new_state = State(str(new_cell), cell=new_cell)
-                            return state.g + 1, new_state
+                    if Attribute("a", classes, classes2) in cell[1] and Attribute("a", classes2, classes) in cell[1]:
+                        continue
+                    if Attribute("a", classes, classes2) not in cell[1]:
+                        new_cell = [cell[0], cell[1][:], cell[2]]
+                        new_cell[1].append(Attribute("a", classes, classes2))
+                        self.add_trail.append(Attribute("a", classes, classes2))
+                        new_state = State(str(new_cell), cell=new_cell)
+                        return state.g + 1, new_state
+                    if Attribute("a", classes2, classes) not in cell[1]:
+                        new_cell = [cell[0], cell[1][:], cell[2]]
+                        new_cell[1].append(Attribute("a", classes2, classes))
+                        self.add_trail.append(Attribute("a", classes2, classes))
+                        new_state = State(str(new_cell), cell=new_cell)
+                        return state.g + 1, new_state
         return None, None
 
     
@@ -288,17 +329,21 @@ class SEDomain:
         # check if there is an inter edge
         if len(cell[1]) == 0:
             return None, None
+        if len(cell[1]) > len(self.goal_state.cell[1]):
+            return None, None
 
-        for classes in cell[0]:
-            for classes2 in cell[0]:
-                if classes.module != classes2.module:
-                    for attribute in cell[1]:
-                        if attribute.class1 == classes and attribute.class2 == classes2:
-                            return None, None
-                    new_cell = [cell[0], cell[1][:], cell[2]]
-                    new_cell[1].append(Attribute("a", classes, classes2))
-                    new_state = State(str(new_cell), cell=new_cell)
-                    return state.g + 1, new_state
+        # for classes in cell[0]:
+            # for classes2 in cell[0]:
+                # if classes.module != classes2.module:
+                    # for attribute in cell[1]:
+                        # if attribute.class1 == classes and attribute.class2 == classes2:
+                            # return None, None
+                    # if Attribute("a", classes, classes2) not in self.add_trail:
+                        # new_cell = [cell[0], cell[1][:], cell[2]]
+                        # new_cell[1].append(Attribute("a", classes, classes2))
+                        # new_state = State(str(new_cell), cell=new_cell)
+                        # self.add_trail.append(Attribute("a", classes, classes2))
+                        # return state.g + 10, new_state
         return None, None
         
     def create_states(self):
@@ -307,19 +352,18 @@ class SEDomain:
         """
         states = []
         attributes = []
-        states.append(self.start_state)
 
         # connect all classes with each other
         # sample all possible combinations of classes
         # remove enumerate to add 2-directional edges in state space
         for i, classes in enumerate(self.start_state.cell[0]):
-            for classes2 in self.start_state.cell[0][i:]:
+            for classes2 in self.start_state.cell[0]:
                 if classes != classes2:
                     attributes.append(Attribute("a", classes, classes2))
         # sample all possible combinations of attributes
-        for j in range(1, len(self.start_state.cell[1])):
+        for j in range(2, len(self.start_state.cell[1])):
             for i in itertools.combinations(attributes, j):
-                new_cell = [self.start_state.cell[0], [i], self.start_state.cell[2]]
+                new_cell = [self.start_state.cell[0], [*i], self.start_state.cell[2]]
                 new_state = State(str(new_cell), cell=new_cell)
                 states.append(new_state)
         #
@@ -351,16 +395,38 @@ class SEDomain:
         """
         Return g cost of action
         """
-        return self.transition_system.transition_relation(state, action)[0]
-
+        if action == Action("add inter edge"):
+            return state.g + 10
+        elif action == Action("add intra edge"):
+            return state.g + 1
+        elif action == Action("delete inter edge"):
+            return state.g + 10
+        elif action == Action("delete intra edge"):
+            return state.g + 1
     def is_goal(self, state):
-        for attr in state.cell[1]:
-            if attr not in self.goal_state.cell[1]:
-                return False
-        for attr in self.goal_state.cell[1]:
-            if attr not in state.cell[1]:
-                return False
-        return True
+        # for attr in state.cell[1]:
+            # if attr not in self.goal_state.cell[1]:
+                # return False
+        # if len(self.goal_state.cell[1]) != len(state.cell[1]):
+            # return False
+        # for attr in self.goal_state.cell[1]:
+            # if attr not in state.cell[1]:
+                # return False
+        # check if attributes of the state and goal state are the same
+        # if len(self.goal_state.cell[1]) != len(state.cell[1]):
+            # return False
+        # for attr in self.goal_state.cell[1]:
+            # if attr not in state.cell[1]:
+                # return False
+        connections = 0 
+        for classes in state.cell[1]:
+            if classes.class1 != classes.class2 and classes.class1.module != classes.class2.module:
+                connections += 1
+
+        print(len(state.cell[1]), self.total_goal * self.aggression, connections)
+        if len(state.cell[1]) >=  self.total_goal * self.aggression and connections == 1:
+            return True
+        return False
     
     def __call__(self, *args, **kwds) :
         return self.successors(*args, **kwds)
