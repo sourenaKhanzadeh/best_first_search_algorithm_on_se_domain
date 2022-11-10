@@ -268,7 +268,7 @@ class SEDomain:
         # check if there is an intra edge
         for classes in cell[0]:
             for classes2 in cell[0]:
-                if classes.module == classes2.module:
+                if classes.module == classes2.module and classes != classes2:
                     for attribute in cell[1]:
                         # classes and classes2 in the same module are checked for presence of link in attributes.
                         # If not exists, add
@@ -327,15 +327,21 @@ class SEDomain:
         # make sure that the goal state is in the list of states
         return states
 
-    def heuristic(self, state, type="h1"):
+    def heuristic(self, state, type="zero"):
         """
         Return the heuristic value of a state
         """
-        if type == "h1":
+        if type == "zero":
             return Heuristic(state)
-        elif type == "h2":
+        elif type == "coupling":
             return CouplingHeuristic(state.cell[0], state.cell[1], state.cell[2])
-        
+        elif type == "cohesion":
+            return CohesionHeuristic(state.cell[0], state.cell[1], state.cell[2])
+        elif type == "AddCouplingCohesion":
+            return AddCouplingCohesionHeuristic(state.cell[0], state.cell[1], state.cell[2])
+        elif type == "MaxCouplingCohesion":
+            return MaxCouplingCohesionHeuristic(state.cell[0], state.cell[1], state.cell[2])
+
         return Heuristic(state)
     
     def goal_test(self, state):
