@@ -12,7 +12,7 @@ from algorithms.best_first_search.egreedy import *
 
 def main():
     # create a tile puzzle
-    tile_puzzle = TilePuzzle(3, init=[1, 5, 2, 0, 3, 6, 7, 8, 4], goals=[[1, 2, 3, 4, 5, 6, 7, 8, 0]])
+    tile_puzzle = TilePuzzle(3, init=[1, 5, 2, 0, 3, 6, 7, 8, 4], goals=[[1, 2, 3, 4, 5, 6, 7, 8, 0]], cost_type='unit')
 
     # create a search engine
     search_engine = EGBFS(1)
