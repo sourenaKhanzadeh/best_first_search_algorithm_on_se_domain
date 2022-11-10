@@ -24,8 +24,7 @@ def main():
     goal_attributes = [Attribute('a', classes[0], classes[1]), Attribute('a', classes[0], classes[2]),
                     Attribute('a', classes[3], classes[2]), Attribute('a', classes[1], classes[2]),
                     Attribute('a', classes[5], classes[3]),
-                    Attribute('a', classes[3], classes[4]), Attribute('a', classes[4], classes[5]),
-                    Attribute('a', classes[4], classes[5])]
+                    Attribute('a', classes[3], classes[4]), Attribute('a', classes[4], classes[5])]
 
     se = SEDomain([classes, attributes, len(modules)], [classes, goal_attributes, len(modules)], "h1")
 

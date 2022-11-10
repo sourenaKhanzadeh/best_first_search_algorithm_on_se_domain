@@ -96,7 +96,7 @@ class Attribute:
 
     def __eq__(self, other):
         if type(other) == type(self):
-            return self.name == other.name
+            return self.name == other.name and self.class1 == other.class1 and self.class2 == other.class2
         elif type(other) == list:
             return self.name == other
         else:
@@ -190,7 +190,8 @@ class SEDomain:
         Create a transition system for the graph
         """
         self.states = self.create_states()
-        actions = [Action("delete intra edge"), Action("delete inter edge"), Action("add intra edge"), Action("add inter edge")]
+        # actions = [Action("delete intra edge"), Action("delete inter edge"), Action("add intra edge"), Action("add inter edge")]
+        actions = [Action("add intra edge"), Action("delete inter edge")]
         transition_relation = self.transition_relation
         init = self.start_state
         goals = self.goal_state
@@ -216,6 +217,7 @@ class SEDomain:
         Delete an intra edge
         """
         cell = state.cell
+        # remove random intra edge (cohesion)
         # check if there is an intra edge
         if len(cell[0]) == 0:
             return None, None
@@ -233,16 +235,25 @@ class SEDomain:
         """
         Delete an inter edge
         """
+        # remove random inter edge (coupling) where it's not the only link between 2 modules.
         cell = state.cell
         # check if there is an intra edge
         if len(cell[0]) == 0:
             return None, None
+        inter_edges = {}
         
         for c in cell[1]:
             if c.class1.module != c.class2.module:
-                # delete intra edge
+                if inter_edges.get((c.class1.module, c.class2.module), None) is None:
+                    inter_edges[(c.class1.module, c.class2.module)] = [c]
+                else:
+                    inter_edges[(c.class1.module, c.class2.module)].append(c)
+
+        for i in inter_edges.values():
+            if len(i) > 1:
+                # delete inter edge
                 new_cell = [cell[0], cell[1][:], cell[2]]
-                new_cell[1].remove(c)
+                new_cell[1].remove(i[0])
                 new_state = State(str(new_cell), cell=new_cell)
                 return state.g + 1, new_state
         return None, None
@@ -259,12 +270,13 @@ class SEDomain:
             for classes2 in cell[0]:
                 if classes.module == classes2.module:
                     for attribute in cell[1]:
-                        if attribute.class1 == classes and attribute.class2 == classes2:
-                            return None, None
-                    new_cell = [cell[0], cell[1][:], cell[2]]
-                    new_cell[1].append(Attribute("a", classes, classes2))
-                    new_state = State(str(new_cell), cell=new_cell)
-                    return state.g + 1, new_state
+                        # classes and classes2 in the same module are checked for presence of link in attributes.
+                        # If not exists, add
+                        if not (attribute.class1 == classes and attribute.class2 == classes2):
+                            new_cell = [cell[0], cell[1][:], cell[2]]
+                            new_cell[1].append(Attribute("a", classes, classes2))
+                            new_state = State(str(new_cell), cell=new_cell)
+                            return state.g + 1, new_state
         return None, None
 
     
@@ -299,16 +311,19 @@ class SEDomain:
 
         # connect all classes with each other
         # sample all possible combinations of classes
-        for classes in self.start_state.cell[0]:
-            for classes2 in self.start_state.cell[0]:
-                attributes.append(Attribute("a", classes, classes2))
+        # remove enumerate to add 2-directional edges in state space
+        for i, classes in enumerate(self.start_state.cell[0]):
+            for classes2 in self.start_state.cell[0][i:]:
+                if classes != classes2:
+                    attributes.append(Attribute("a", classes, classes2))
         # sample all possible combinations of attributes
         for j in range(1, len(self.start_state.cell[1])):
             for i in itertools.combinations(attributes, j):
                 new_cell = [self.start_state.cell[0], [i], self.start_state.cell[2]]
                 new_state = State(str(new_cell), cell=new_cell)
                 states.append(new_state)
-                        
+        #
+        # print("all: ", len(states))
         # make sure that the goal state is in the list of states
         return states
 
@@ -334,7 +349,10 @@ class SEDomain:
 
     def is_goal(self, state):
         for attr in state.cell[1]:
-            if attr != self.goal_state.cell[1]:
+            if attr not in self.goal_state.cell[1]:
+                return False
+        for attr in self.goal_state.cell[1]:
+            if attr not in state.cell[1]:
                 return False
         return True
     
