@@ -26,7 +26,7 @@ def main():
                     Attribute('a', classes[5], classes[3]),
                     Attribute('a', classes[3], classes[4]), Attribute('a', classes[4], classes[5])]
 
-    se = SEDomain([classes, attributes, len(modules)], [classes, goal_attributes, len(modules)], "h1")
+    se = SEDomain([classes, attributes, len(modules)], [classes, goal_attributes, len(modules)], heuristic="MaxCouplingCohesion", aggression=0.75)
 
     search_engine = AStar()
     # set the transition system
