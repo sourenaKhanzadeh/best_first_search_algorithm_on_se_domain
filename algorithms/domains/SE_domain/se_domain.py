@@ -423,7 +423,6 @@ class SEDomain:
             if classes.class1 != classes.class2 and classes.class1.module != classes.class2.module:
                 connections += 1
 
-        print(len(state.cell[1]), self.total_goal * self.aggression, connections)
         if len(state.cell[1]) >=  self.total_goal * self.aggression and connections == 1:
             return True
         return False
