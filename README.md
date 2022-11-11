@@ -1,5 +1,5 @@
 # Heuristic Problems
-Using heuristic search on different domains.
+Using heuristic search on different domains. see how to [simulate](simulate) these domains.
 
 # Domains
 
