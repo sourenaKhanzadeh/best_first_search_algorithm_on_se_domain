@@ -14,7 +14,7 @@ from domain.tilepuzzle.simulate_tilepuzzle import *
 
 if __name__ == "__main__":
     # create a tile puzzle
-    tile_puzzle = TilePuzzle(3, init=[1, 5, 2, 0, 3, 6, 7, 8, 4], goals=[[1, 2, 3, 4, 5, 6, 7, 8, 0]])
+    tile_puzzle = TilePuzzle(3, 3, init=[1, 5, 2, 0, 3, 6, 7, 8, 4], goals=[[1, 2, 3, 4, 5, 6, 7, 8, 0]])
 
     # create a search engine
     search_engine = AStar(1)

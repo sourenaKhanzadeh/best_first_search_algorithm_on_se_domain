@@ -16,8 +16,9 @@ class TransitionSystem:
     def successors(self, state):
         """Return a list of (action, next_state) pairs reachable from |state|."""
         for action in self.actions:
-            if self.transition_relation(state, action)[1]  is not None:
-                yield action, self.transition_relation(state, action)[1]
+            cost, next_state = self.transition_relation(state, action)
+            if next_state  is not None:
+                yield action, next_state
             else:
                 continue
     def get_action_cost(self, state, action):
@@ -79,15 +80,18 @@ class Action:
 
 
 class TilePuzzle:
-    def __init__(self, size, init, goals, cost_type='unit'):
-        self.size = size
+    def __init__(self, width, height, init, goals, cost_type='unit'):
+        self.size = width * height
+        self.width = width
+        self.height = height
         self.init = State(str(init), cells=init)
         self.goals = State(str(goals[0]), cells=goals[0])
         self.actions = [Action('up'), Action('down'), Action('left'), Action('right')]
-        self.states = [i for i in range(size * size)]
-        self.states = self.permutate_list(self.states)
-        self.states = [State(str(state), cells=self.find_zero(state), parent=None, g=0) for state in self.states]
-        
+        # self.states = [i for i in range(self.size)]
+        # self.states = self.permutate_list(self.states)
+        # self.states = [State(str(state), cells=self.find_zero(state), parent=None, g=0) for state in self.states]
+        self.states = [self.init]
+
         self.transition_relation = self._transition_relation
         self.heuristic = self.heuristic
         self.cost_function = self.cost_function
@@ -136,41 +140,37 @@ class TilePuzzle:
         """
         Move the empty tile up.
         """
-        if self.find_zero(state) < self.size:
-            return None
-        else:
-            new_state = self.find_zero(state) - self.size
-            return self.swap(state, new_state)
+        index = self.find_zero(state)
+        if index >= self.width:
+            return self.swap(state, index - self.width)
+        return None
 
     def move_down(self, state):
         """
         Move the empty tile down.
         """
-        if self.find_zero(state) >= (self.size * self.size) - self.size:
-            return None
-        else:
-            new_state = self.find_zero(state) + self.size
-            return self.swap(state, new_state)
-    
+        index = self.find_zero(state)
+        if index < self.size - self.width:
+            return self.swap(state, index + self.width)
+        return None
+
     def move_left(self, state):
         """
         Move the empty tile left.
         """
-        if self.find_zero(state) % self.size == 0:
-            return None
-        else:
-            new_state = self.find_zero(state) - 1
-            return self.swap(state, new_state)
-    
+        index = self.find_zero(state)
+        if index % self.width != 0:
+            return self.swap(state, index - 1)
+        return None
+
     def move_right(self, state):
         """
         Move the empty tile right.
         """
-        if self.find_zero(state) % self.size == self.size - 1:
-            return None
-        else:
-            new_state = self.find_zero(state) + 1
-            return self.swap(state, new_state)
+        index = self.find_zero(state)
+        if index % self.width != self.width - 1:
+            return self.swap(state, index + 1)
+        return None
     
     def swap(self, state, new_state):
         """
@@ -222,10 +222,20 @@ class TilePuzzle:
 
     def heuristic(self, state):
         """
-        Manhattan distance
+        Return the heuristic value of |state|.
         """
-        return sum(abs(b % self.size - g % self.size) + abs(b // self.size - g // self.size) for b, g in ((self.find_other(state, i), self.find_other(self.goals, i)) for i in range(1, self.size * self.size)))
+        return self.manhattan_distance(state)
     
+    def manhattan_distance(self, state):
+        """
+        Return the manhattan distance of |state|.
+        """
+        distance = 0
+        for i in range(len(state.cell)):
+            if state.cell[i] != 0:
+                distance += abs(i % self.width - self.find_other(self.goals, state.cell[i]) % self.width) + abs(i // self.width - self.find_other(self.goals, state.cell[i]) // self.width)
+        return distance
+
     def permutate_list(self, lst):
         """
         Permutate the list |lst| and return the result.

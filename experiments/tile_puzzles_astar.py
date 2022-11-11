@@ -12,10 +12,10 @@ from algorithms.best_first_search.egreedy import *
 
 def main():
     # create a tile puzzle
-    tile_puzzle = TilePuzzle(3, init=[1, 5, 2, 0, 3, 6, 7, 8, 4], goals=[[1, 2, 3, 4, 5, 6, 7, 8, 0]], cost_type='unit')
+    tile_puzzle = TilePuzzle(3, 4, init=[4, 0, 9, 7, 6, 5, 1, 3, 2, 11, 10, 8], goals=[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0]], cost_type='unit')
 
     # create a search engine
-    search_engine = EGBFS(1)
+    search_engine = GBFS(1)
     # set the transition system
     search_engine.setTransitionSystem(tile_puzzle.to_transition_system())
     # set the heuristic
