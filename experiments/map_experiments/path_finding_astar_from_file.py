@@ -109,7 +109,7 @@ def main():
             heuristic= 'manhattan',
             type='connect-4'
         )
-        search_engine = IDAStar(1)
+        search_engine = AStar(1)
         # set the transition system
         search_engine.setTransitionSystem(grid_map.transition_system)
         # set the heuristic

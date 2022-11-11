@@ -10,10 +10,12 @@ class AStar(SearchEngine):
         self.w = w
 
     def search(self, start, goal):
-        self.open = [start]
+        # tie breaking
+        heapq.heappush(self.open, (self.heuristic(start), start))
         self.closed = []
         while self.open:
-            current = self.open.pop(0)
+            # if tie breaking get the one with lower g cost
+            current = heapq.heappop(self.open)[1]
             self.closed.append(current)
             self.number_of_expanded_nodes += 1
             if self.goal_test(current):
@@ -26,23 +28,34 @@ class AStar(SearchEngine):
             for action, child in self.transition_system(current):
                 if child in self.closed:
                     continue
-                if child not in self.open:
+                # if child not in the heap
+                if child not in [x[1] for x in self.open]:
                     child.parent = current
                     child.action = action
                     child.g = self.cost_function(current, action)
-                    self.open.append(child)
+                    heapq.heappush(self.open, (child.g + self.w * self.heuristic(child), child))
+                # if child not in self.open:
+                    # child.parent = current
+                    # child.action = action
+                    # child.g = self.cost_function(current, action)
+                    # add to open
+                    # heapq.heappush(self.open, (child.g + self.w * self.heuristic(child), child))
                 else:
                     if child.g < current.g:
-                        self.open.remove(child)
+                        # remove child from heap
+                        self.open = [x for x in self.open if x[1] != child]
                         child.parent = current
                         child.action = action
                         child.g = self.cost_function(current, action)
-                        self.open.append(child)
-                        
+                        # add to open
+                        heapq.heappush(self.open, (child.g + self.w * self.heuristic(child), child))
+            # if tie breaking then sort the heap by the g value
+            # self.open = heapq.nsmallest(len(self.open), self.open, key=lambda x: (x[0]))
+                
             # put the current fscore in the heap
-            heapq.heapify(self.open)
+            # heapq.heapify(self.open)
             # get the lowest fscore from the heap
-            self.open = heapq.nsmallest(len(self.open), self.open, key=lambda x: (x.g + self.w * self.heuristic(x), x.g))
+            # self.open = heapq.nsmallest(len(self.open), self.open, key=lambda x: (x.g + self.w * self.heuristic(x), x.g))
             # self.open.sort(key=lambda x: x.g + self.w * self.heuristic(x))
         self.status = SearchStatus.TERMINATED
         return None
