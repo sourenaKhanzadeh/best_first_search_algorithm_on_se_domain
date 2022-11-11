@@ -19,8 +19,9 @@ class TransitionSystem(object):
     def successors(self, state):
         """Return a list of (action, next_state) pairs reachable from |state|."""
         for action in self.actions:
-            if self.transition_relation(state, action, self.type)[1]  is not None:
-                yield action, self.transition_relation(state, action, self.type)[1]
+            cost, next_state = self.transition_relation(state, action, self.type)
+            if next_state  is not None:
+                yield action, next_state
             else:
                 continue
 
