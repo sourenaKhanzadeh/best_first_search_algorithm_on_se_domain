@@ -40,6 +40,12 @@ class ClassSE:
             self.y = pos[1]
             self.rect = pygame.Rect(self.x, self.y, self.radius * 2, self.radius * 2)
 
+    def __str__(self) -> str:
+        return f"ClassSE({self.number})"
+    
+    def __repr__(self) -> str:
+        return f"ClassSE({self.number})"
+
 class ModuleSE:
     def __init__(self, x, y, w, h, color):
         self.x = x
@@ -89,6 +95,8 @@ class AttributeSE:
 
     def draw(self, win):
         pygame.draw.line(win, self.color, (self.class1.x, self.class1.y), (self.class2.x, self.class2.y), 1)
+        # draw the arrow
+        pygame.draw.polygon(win, self.color, [(self.class2.x, self.class2.y), (self.class2.x - 5, self.class2.y - 5), (self.class2.x - 5, self.class2.y + 5)], 1)
 
     def __str__(self) -> str:
         return f"({self.class1.number}, {self.class2.number})"
@@ -140,7 +148,7 @@ class Game:
                     for class1 in self.classes:
                         if class1.color == (255, 0, 0):
                             for class2 in self.classes:
-                                if class2.color == (255, 0, 0):
+                                if class2.color == (255, 0, 0) and class1 != class2:
                                     self.attributes.append(AttributeSE(class1, class2))
                                     class1.color = (0, 0, 0)
                                     class2.color = (0, 0, 0)
@@ -172,7 +180,7 @@ class Game:
                             index += 1
 
                     attributes = []
-                    print(self.attributes)
+                    print(modules)
                     for a in range(len(self.attributes)):
                         attributes.append(Attribute('a', classes[self.attributes[a].class1.number], 
                         classes[self.attributes[a].class2.number]))
@@ -200,9 +208,10 @@ class Game:
                         self.attributes.clear()
                         path, action = path
                         for p in path:
-                            print(p)
-                            self.attributes.append(AttributeSE(self.classes[classes.index(p.cell[1].class1)],
-                            self.classes[classes.index(p.cell[1].class2)]))
+                            for a in p.cell[1]:
+                                self.attributes.append(AttributeSE(self.classes[classes.index(a.class1)],
+                                self.classes[classes.index(a.class2)]))
+                                self.attributes[-1].color = (0, 255, 0)
 
     def update(self):
         for module in self.modules:
