@@ -26,29 +26,37 @@ class AStar(SearchEngine):
                 self.status = SearchStatus.TERMINATED
                 return self.path, self.actions
             for action, child in self.transition_system(current):
-                if child in self.closed:
-                    continue
+                current_cost = self.cost_function(current, action)
+                # if child in self.closed:
+                    # continue
+                if child in [x[1] for x in self.open]:
+                    if child.g <= current_cost:
+                        continue
+                elif child in self.closed:
+                    if child.g <= current_cost:
+                        continue
+                    heapq.heappush(self.open, (self.heuristic(child), self.closed.pop(self.closed.index(child))))
                 # if child not in the heap
-                if child not in [x[1] for x in self.open]:
-                    child.parent = current
-                    child.action = action
-                    child.g = self.cost_function(current, action)
-                    heapq.heappush(self.open, (child.g + self.w * self.heuristic(child), child))
+                # if child not in [x[1] for x in self.open]:
+                child.parent = current
+                child.action = action
+                child.g = self.cost_function(current, action)
+                heapq.heappush(self.open, (child.g + self.w * self.heuristic(child), child))
                 # if child not in self.open:
                     # child.parent = current
                     # child.action = action
                     # child.g = self.cost_function(current, action)
                     # add to open
                     # heapq.heappush(self.open, (child.g + self.w * self.heuristic(child), child))
-                else:
-                    if child.g < current.g:
-                        # remove child from heap
-                        self.open = [x for x in self.open if x[1] != child]
-                        child.parent = current
-                        child.action = action
-                        child.g = self.cost_function(current, action)
-                        # add to open
-                        heapq.heappush(self.open, (child.g + self.w * self.heuristic(child), child))
+                # else:
+                #     if child.g < current.g:
+                #         # remove child from heap
+                #         self.open = [x for x in self.open if x[1] != child]
+                #         child.parent = current
+                #         child.action = action
+                #         # child.g = self.cost_function(current, action)
+                #         # add to open
+                #         heapq.heappush(self.open, (child.g + self.w * self.heuristic(child), child))
             # if tie breaking then sort the heap by the g value
             # self.open = heapq.nsmallest(len(self.open), self.open, key=lambda x: (x[0]))
                 
