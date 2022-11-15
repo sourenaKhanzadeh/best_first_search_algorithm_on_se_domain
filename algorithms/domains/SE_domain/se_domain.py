@@ -299,25 +299,31 @@ class SEDomain:
         #                     new_state = State(str(new_cell), cell=new_cell)
         #                     return state.g + 1, new_state
         
-        
+        to_append = None
         # add every batch of classes in the same module
         for classes in cell[0]:
             for classes2 in cell[0]:
                 if classes.module == classes2.module and classes != classes2:
                     if Attribute("a", classes, classes2) in cell[1] and Attribute("a", classes2, classes) in cell[1]:
                         continue
-                    if Attribute("a", classes, classes2) not in cell[1]:
+                    if Attribute("a", classes, classes2) not in cell[1] and Attribute("a", classes2, classes) not in cell[1]:
                         new_cell = [cell[0], cell[1][:], cell[2]]
                         new_cell[1].append(Attribute("a", classes, classes2))
                         self.add_trail.append(Attribute("a", classes, classes2))
                         new_state = State(str(new_cell), cell=new_cell)
                         return state.g + 1, new_state
+                    if Attribute("a", classes, classes2) not in cell[1]: # prioritize when A(c,c2) and A(c2,c) both don't exist in cell[1]
+                        to_append = Attribute("a", classes, classes2)
                     if Attribute("a", classes2, classes) not in cell[1]:
-                        new_cell = [cell[0], cell[1][:], cell[2]]
-                        new_cell[1].append(Attribute("a", classes2, classes))
-                        self.add_trail.append(Attribute("a", classes2, classes))
-                        new_state = State(str(new_cell), cell=new_cell)
-                        return state.g + 1, new_state
+                        to_append = Attribute("a", classes2, classes)
+
+        if to_append is not None:
+            new_cell = [cell[0], cell[1][:], cell[2]]
+            new_cell[1].append(to_append)
+            self.add_trail.append(to_append)
+            new_state = State(str(new_cell), cell=new_cell)
+            return state.g + 1, new_state
+
         return None, None
 
     
@@ -418,12 +424,12 @@ class SEDomain:
         # for attr in self.goal_state.cell[1]:
             # if attr not in state.cell[1]:
                 # return False
-        connections = 0 
+        connections = 0 # coupling
         for classes in state.cell[1]:
             if classes.class1 != classes.class2 and classes.class1.module != classes.class2.module:
                 connections += 1
 
-        if len(state.cell[1]) >=  self.total_goal * self.aggression and connections == 1:
+        if len(state.cell[1]) >  self.total_goal * self.aggression and connections == 1:
             return True
         return False
     
