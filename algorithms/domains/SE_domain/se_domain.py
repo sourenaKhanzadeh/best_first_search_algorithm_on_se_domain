@@ -65,7 +65,7 @@ class Class:
 class Module:
     def __init__(self, name, classes):
         self.name = name
-        self.classes = classes
+        self.classes = classes  # TODO: Remove from here - module is already held by Class class above.
 
     def __str__(self):
         return f"{self.name}: {self.classes}"
@@ -183,6 +183,8 @@ class SEDomain:
         self.delete_trail = []
         self.add_trail = []
         self.aggression = aggression
+        # TODO: convert total_goal into formula after confirming:
+        # len(self.goal_state.cell[0]) * (len(self.goal_state.cell[0])-1)
         self.total_goal = 0
         for c in self.goal_state.cell[0]:
             for c2 in self.goal_state.cell[0]:
