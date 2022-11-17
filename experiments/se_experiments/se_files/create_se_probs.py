@@ -18,8 +18,8 @@ NUM_OF_PROBS = 100
 class SeProblemInstance:
     def __init__(self, num_of_modules, classes, start_state_links):
         self.num_of_modules = num_of_modules
-        self.classes = classes # [(c, m)] class c in module m
-        self.start_state_links = start_state_links # [(i, j)] class i is linked with class j
+        self.classes = classes  # [(c, m)] class c in module m
+        self.start_state_links = start_state_links  # [(i, j)] class i is linked with class j
 
     def __str__(self):
         return str(self.num_of_modules) + ";" + str(self.classes) + ";" + str(self.start_state_links)
@@ -44,7 +44,7 @@ class CreateSeProbs:
         self.max_modules = max_modules
         self.max_classes = max_classes
         self.num_of_probs = num_of_probs
-        self.probs = [] # [SeProblemInstance]
+        self.probs = []  # [SeProblemInstance]
 
     def _get_random_num_of_modules(self):
         return [randint(self.min_modules, self.max_modules) for _ in range(self.num_of_probs)]
