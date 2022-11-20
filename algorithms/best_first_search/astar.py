@@ -35,7 +35,7 @@ class AStar(SearchEngine):
                 elif child in self.closed:
                     if child.g <= current_cost:
                         continue
-                    heapq.heappush(self.open, (self.heuristic(child), self.closed.pop(self.closed.index(child))))
+                    heapq.heappush(self.open, (child.g + self.w * self.heuristic(child), self.closed.pop(self.closed.index(child))))
                 # if child not in the heap
                 # if child not in [x[1] for x in self.open]:
                 child.parent = current
