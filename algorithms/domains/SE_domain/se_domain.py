@@ -190,6 +190,7 @@ class SEDomain:
             for c2 in self.goal_state.cell[0]:
                 if c != c2 and c.module == c2.module:
                     self.total_goal += 1
+
     def __str__(self):
         return 'SE_Domain({}, {})'.format(self.transition_system, self.states)
 

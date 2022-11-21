@@ -30,11 +30,24 @@ class SeProblemInstance:
         return SeProblemInstance(eval(lis[0]), eval(lis[1]), eval(lis[2]))
 
 
-# TODO: Implement mapper in future to map back to domain and run A*
 class SeProblemInstanceToSeDomainMapper:
     @classmethod
-    def map(cls, se_problem_instance: SeProblemInstance) -> SEDomain:
-        pass
+    def map(cls, se_problem_instance: SeProblemInstance, heuristic='h1', aggression=0.5) -> SEDomain:
+        modules = [Module(str(i), []) for i in range(se_problem_instance.num_of_modules)]
+        classes = []
+
+        for c, m in se_problem_instance.classes:
+
+            classs = Class(str(c), modules[m])
+            classes.append(classs)
+            modules[m].classes.append(classs)
+
+        attributes = [Attribute('a', classes[i], classes[j]) for i, j in se_problem_instance.start_state_links]
+
+        start_state = [classes, attributes, se_problem_instance.num_of_modules]
+        goal_state = [classes, [], se_problem_instance.num_of_modules]  # unused in A* algorithm
+
+        return SEDomain(start_state, goal_state, heuristic=heuristic, aggression=aggression)
 
 
 class CreateSeProbs:
@@ -50,18 +63,18 @@ class CreateSeProbs:
         return [randint(self.min_modules, self.max_modules) for _ in range(self.num_of_probs)]
 
     def _get_random_classes(self, num_of_modules):
-        return [(i, randint(0, num_of_modules)) for i in range(randint(self.min_classes, self.max_classes))]
+        return [(i, randint(0, num_of_modules-1)) for i in range(randint(self.min_classes, self.max_classes))]
 
     def _get_random_links(self, num_of_classes):
         links = []
         total_num_of_links_possible = num_of_classes * (num_of_classes-1)
         for i in range(randint(0, total_num_of_links_possible)):
-            random_link_from_class = randint(0, num_of_classes+1)
-            random_link_to_class = choice(list(range(0, random_link_from_class)) + list(range(random_link_from_class, num_of_classes+1)))
+            random_link_from_class = randint(0, num_of_classes-1)
+            random_link_to_class = choice(list(range(0, random_link_from_class)) + list(range(random_link_from_class, num_of_classes-1)))
             link = (random_link_from_class, random_link_to_class)
             while link in links:
-                random_link_from_class = randint(0, num_of_classes+1)
-                random_link_to_class = choice(list(range(0, random_link_from_class)) + list(range(random_link_from_class, num_of_classes+1)))
+                random_link_from_class = randint(0, num_of_classes-1)
+                random_link_to_class = choice(list(range(0, random_link_from_class)) + list(range(random_link_from_class, num_of_classes-1)))
                 link = (random_link_from_class, random_link_to_class)
             # append a unique link
             links.append(link)
@@ -96,8 +109,8 @@ class CreateSeProbs:
                 probs_file.write(str(prob) + '\n')
 
 
-if __name__ == "__main__":
-    se_probs = CreateSeProbs(max_modules=MAX_NUM_OF_MODULES, max_classes=MAX_NUM_OF_CLASSES, num_of_probs=NUM_OF_PROBS)
-
-    se_probs.create_probs()
-    se_probs.write_probs_to_file(PROBS_FILE)
+# if __name__ == "__main__":
+#     se_probs = CreateSeProbs(max_modules=MAX_NUM_OF_MODULES, max_classes=MAX_NUM_OF_CLASSES, num_of_probs=NUM_OF_PROBS)
+#
+#     se_probs.create_probs()
+#     se_probs.write_probs_to_file(PROBS_FILE)
