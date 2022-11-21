@@ -14,7 +14,7 @@ MAX_NUM_OF_MODULES = 2
 MAX_NUM_OF_CLASSES = 6
 NUM_OF_PROBS = 1
 
-SOL_FILE = "se_sol.txt"
+SOL_FILE = "se_files/se_sol.txt"
 
 
 def main():
@@ -48,6 +48,10 @@ def main():
         # print the path
         print(path)
         print(search_engine.statistics())
+
+    with open(SOL_FILE, "w") as sol_file:
+        for path in sol_paths:
+            sol_file.write(path)
 
 
 if __name__ == "__main__":
