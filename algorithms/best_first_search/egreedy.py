@@ -14,10 +14,12 @@ class GBFS(SearchEngine):
         self.w = w
 
     def search(self, start, goal):
-        self.open = [start]
+        # tie breaking
+        heapq.heappush(self.open, (self.heuristic(start), start))
         self.closed = []
         while self.open:
-            current = self.open.pop(0)
+            # if tie breaking get the one with lower g cost
+            current = heapq.heappop(self.open)[1]
             self.closed.append(current)
             self.number_of_expanded_nodes += 1
             if self.goal_test(current):
@@ -28,25 +30,22 @@ class GBFS(SearchEngine):
                 self.status = SearchStatus.TERMINATED
                 return self.path, self.actions
             for action, child in self.transition_system(current):
-                if child in self.closed:
-                    continue
-                if child not in self.open:
-                    child.parent = current
-                    child.action = action
-                    child.g = self.cost_function(current, action)
-                    self.open.append(child)
-                else:
-                    if child.g < current.g:
-                        self.open.remove(child)
-                        child.parent = current
-                        child.action = action
-                        child.g = self.cost_function(current, action)
-                        self.open.append(child)
-            
-            # put the current fscore in the heap
-            heapq.heapify(self.open)
-            # get the lowest fscore from the heap
-            self.open = heapq.nsmallest(len(self.open), self.open, key=lambda x: (self.w * self.heuristic(x)))
+                current_cost = self.cost_function(current, action)
+                # if child in self.closed:
+                    # continue
+                if child in [x[1] for x in self.open]:
+                    if child.g <= current_cost:
+                        continue
+                elif child in self.closed:
+                    if child.g <= current_cost:
+                        continue
+                    heapq.heappush(self.open, (self.heuristic(child), self.closed.pop(self.closed.index(child))))
+                # if child not in the heap
+                # if child not in [x[1] for x in self.open]:
+                child.parent = current
+                child.action = action
+                child.g = self.cost_function(current, action)
+                heapq.heappush(self.open, (self.heuristic(child), child))
         self.status = SearchStatus.TERMINATED
         return None
 

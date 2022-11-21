@@ -3,6 +3,8 @@ import os
 
 # add the parent directory to the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# add the parent parent directory to the path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 # import the necessary packages
 from generic_defs.search_engine import *
 from algorithms.domains.SE_domain.se_domain import *

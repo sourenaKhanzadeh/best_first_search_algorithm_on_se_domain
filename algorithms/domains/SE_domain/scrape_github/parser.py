@@ -36,7 +36,7 @@ class JavaParser:
                 # find the attributes starting with private, public, protected end with ;
                 match = re.search(r'(private|public|protected)\s+(\w+)\s+(\w+);', line)
                 if match:
-                    self.attributes.append(match.group(3))
+                    self.attributes.append(match.group(2))
 
 
 
@@ -47,7 +47,12 @@ class Walk:
     def __init__(self, path):
         self.path = path
         self.java_files = []
-        self.parses = {}
+        self.parses = {
+            'classes': [],
+            'attributes': [],
+            'modules': []
+        }
+        self.all_parses = []
         self.walk()
     
     def walk(self):
@@ -66,10 +71,42 @@ class Walk:
             print(f"Imports: {parser.imports}")
             print(f"Package: {parser.package}")
             print("=" * 50)
-            self.parses[file] = parser
-        return self.parses
+            self.parses['classes'].append(parser.classes[0])
+            for att in parser.attributes:
+                self.parses['attributes'].append(att)
+            if parser.package:
+                self.parses['modules'].append(parser.package)
+            self.all_parses.append(self.parses)
+            self.parses = {
+                'classes': [],
+                'attributes': [],
+                'modules': []
+            }
+        return self.all_parses
+    
+    def format_parses(self):
+        formatted_parses = []
+        attrs = []
+        classes = []
+        for parse in self.all_parses:
+            for module in parse['modules']:
+                # check if classes are in the attributes in the same module
+                for attr in parse['attributes']:
+                    attrs.append(f"{module}.{attr}")
+                for cls in parse['classes']:
+                    classes.append(f"{module}.{cls}")
+        i = 0
+        for cls in classes:
+            for cls_ in classes:
+                if cls != cls_ and cls_ in attrs:
+                    if attrs.index(cls_) == i:
+                        formatted_parses.append(f"{cls}->{cls_}")
+            i+=1
+        return formatted_parses
+            
 
 if __name__ == "__main__":
     walk = Walk('data')
     walk.parse()
+    print(walk.format_parses())
 
