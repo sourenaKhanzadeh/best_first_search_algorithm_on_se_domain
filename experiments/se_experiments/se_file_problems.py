@@ -3,6 +3,9 @@ import os
 
 # add the parent directory to the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# add the parent parent directory to the path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 # import the necessary packages
 from generic_defs.search_engine import *
 from algorithms.domains.SE_domain.se_domain import *
@@ -12,7 +15,7 @@ from experiments.se_experiments.se_files.create_se_probs import *
 PROBS_FILE = "se_files/se.probs"
 MAX_NUM_OF_MODULES = 2
 MAX_NUM_OF_CLASSES = 6
-NUM_OF_PROBS = 1
+NUM_OF_PROBS = 100
 
 SOL_FILE = "se_files/se_sol.txt"
 
@@ -51,7 +54,7 @@ def main():
 
     with open(SOL_FILE, "w") as sol_file:
         for path in sol_paths:
-            sol_file.write(path)
+            sol_file.write(str(path))
 
 
 if __name__ == "__main__":

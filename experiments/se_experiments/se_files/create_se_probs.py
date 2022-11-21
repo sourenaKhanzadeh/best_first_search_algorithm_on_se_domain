@@ -5,6 +5,10 @@ from random import randint
 
 # add the parent directory to the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# add the parent parent directory to the path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+# add parent parent parent directory to the path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 # import the necessary packages
 from algorithms.domains.SE_domain.se_domain import *
@@ -32,7 +36,7 @@ class SeProblemInstance:
 
 class SeProblemInstanceToSeDomainMapper:
     @classmethod
-    def map(cls, se_problem_instance: SeProblemInstance, heuristic='h1', aggression=0.5) -> SEDomain:
+    def map(cls, se_problem_instance: SeProblemInstance, heuristic='zero', aggression=0.5) -> SEDomain:
         modules = [Module(str(i), []) for i in range(se_problem_instance.num_of_modules)]
         classes = []
 
@@ -46,7 +50,6 @@ class SeProblemInstanceToSeDomainMapper:
 
         start_state = [classes, attributes, se_problem_instance.num_of_modules]
         goal_state = [classes, [], se_problem_instance.num_of_modules]  # unused in A* algorithm
-
         return SEDomain(start_state, goal_state, heuristic=heuristic, aggression=aggression)
 
 
