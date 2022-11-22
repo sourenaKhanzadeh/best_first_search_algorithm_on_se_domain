@@ -87,27 +87,36 @@ class Walk:
     
     def format_parses(self):
         formatted_parses = []
-        attrs = []
         classes = []
+        all_classes = []
+        attrs = []
+        # we have [{'classes': [], 'attributes': [], 'modules': []}, ...] in self.all_parses
+        # we want to get a list of all the attributes coresponing to a class and depengind on the module
+        # make a list of [f"{model}/{class_}", [attr1, attr2, ...]]
         for parse in self.all_parses:
+            for class_ in parse['classes']:
+                classes.append(class_)
+                all_classes.append(class_)
+            for attr in parse['attributes']:
+                attrs.append(attr)
             for module in parse['modules']:
-                # check if classes are in the attributes in the same module
-                for attr in parse['attributes']:
-                    attrs.append(f"{module}.{attr}")
-                for cls in parse['classes']:
-                    classes.append(f"{module}.{cls}")
-        i = 0
-        for cls in classes:
-            for cls_ in classes:
-                if cls != cls_ and cls_ in attrs:
-                    if attrs.index(cls_) == i:
-                        formatted_parses.append(f"{cls}->{cls_}")
-            i+=1
+                if classes:
+                    formatted_parses.append([f"{module}.{classes[0]}", attrs])
+                classes = []
+                attrs = []
+        # if attrs not in clasess remove it
+        for parse in formatted_parses:
+            for attr in parse[1]:
+                if attr not in all_classes:
+                    parse[1].remove(attr)
+
+        # make format_parses like this [f"{model}.{class_}->{module2}.{attr2}", ...]
+        formatted_parses = [f"{parse[0]}->{attr}" for parse in formatted_parses for attr in parse[1]]
         return formatted_parses
             
 
 if __name__ == "__main__":
-    walk = Walk('data/uml-reverse-mapper')
+    walk = Walk('data/10-cool-java-project')
     walk.parse()
     formatted_parse = walk.format_parses()
     print(formatted_parse)

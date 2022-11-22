@@ -4,5 +4,8 @@
     },
     {
         "project_2":["com/iluwatar/urm.DomainMapperGraphvizTest->com/iluwatar/urm.DomainMapper", "com/iluwatar/urm/presenters.PresenterTest->com/iluwatar/urm/testdomain.Selfie", "com/iluwatar/urm/testdomain.Company->com/iluwatar/urm/testdomain/person.Manager", "com/iluwatar/urm/testdomain.PhoneNumber->com/iluwatar/urm/testdomain/weirdos.Outer", "com/iluwatar/urm/testdomain/observ.Observable->com/iluwatar/urm/testdomain/weirdos.OuterReferencingInner", "com/iluwatar/urm/testdomain/person.Manager->com/iluwatar/urm/testdomain/family.Husband", "com/iluwatar/urm/testdomain/person.Person->com/iluwatar/urm/testdomain/withanonymousclass.ClassWithAnonymousImplementation"]
+    },
+    {
+        "project_3":["Gui.Accounts->Second.ClothingCompany", "Gui.Accounts->Gui.Compression", "Second.ClothingCompany->Second.Main", "Gui.Compression->Second.Main"]
     }
 ]
