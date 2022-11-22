@@ -24,8 +24,8 @@ class JavaParser:
                 match = re.search(r'class\s+(\w+)', line)
                 if match:
                     self.classes.append(match.group(1))
-                # find the package
-                match = re.search(r'package\s+(\w+)', line)
+                # find the package and get the whole package name with . in between
+                match = re.search(r'package\s+(\w+(\.\w+)*)', line)
                 if match:
                     self.package = match.group(1)
                 # find the imports get the full class
@@ -71,11 +71,12 @@ class Walk:
             print(f"Imports: {parser.imports}")
             print(f"Package: {parser.package}")
             print("=" * 50)
-            self.parses['classes'].append(parser.classes[0])
+            for class_ in parser.classes:
+                self.parses['classes'].append(class_)
             for att in parser.attributes:
                 self.parses['attributes'].append(att)
             if parser.package:
-                self.parses['modules'].append(parser.package)
+                self.parses['modules'].append(parser.package.replace('.', '/'))
             self.all_parses.append(self.parses)
             self.parses = {
                 'classes': [],
@@ -106,7 +107,7 @@ class Walk:
             
 
 if __name__ == "__main__":
-    walk = Walk('data')
+    walk = Walk('data/uml-reverse-mapper')
     walk.parse()
-    print(walk.format_parses())
-
+    formatted_parse = walk.format_parses()
+    print(formatted_parse)

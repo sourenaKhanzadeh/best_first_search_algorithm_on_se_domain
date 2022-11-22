@@ -57,7 +57,8 @@ class GithubScraper:
 
 
 if __name__ == "__main__":
-    scraper = GithubScraper("sourenakhanzadeh", "https://api.github.com/users/sourenakhanzadeh/repos")
+    # scraper = GithubScraper("sourenakhanzadeh", "https://api.github.com/users/sourenakhanzadeh/repos")
+    scraper = GithubScraper("iluwatar", "https://api.github.com/users/iluwatar/repos")
     scraper.scrape()
     # scraper.print_repos()
     java_repos = scraper.get_java_repos()
