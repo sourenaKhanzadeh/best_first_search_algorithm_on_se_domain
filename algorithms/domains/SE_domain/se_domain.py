@@ -201,7 +201,7 @@ class SEDomain:
         """
         Create a transition system for the graph
         """
-        self.states = self.create_states()
+        # self.states = self.create_states()
         # actions = [Action("delete intra edge"), Action("delete inter edge"), Action("add intra edge"), Action("add inter edge")]
         actions = [ Action("add intra edge"), Action("delete inter edge")]
         transition_relation = self.transition_relation

@@ -46,11 +46,11 @@ class ProjParser:
                 class_1, class_2 = attr.split('->')
                 module_1 = class_1.split('.')[0]
                 module_2 = class_2.split('.')[0]
-                self.attributes.append(Attribute('a', class_1, class_2))
                 if class_1 not in self.classes:
                     self.classes.append(Class(class_1, module_1))
                 if class_2 not in self.classes:
                     self.classes.append(Class(class_2, module_2))
+                self.attributes.append(Attribute('a', self.classes[-2], self.classes[-1]))
                 if module_1 not in self.modules:
                     self.modules.append(Module(module_1, []))
                 if module_2 not in self.modules:
@@ -68,10 +68,10 @@ class ProjParser:
 if __name__ == "__main__":
     proj_reader = ProjReader(PROJ_PATH)
     print(proj_reader.get_projects())
-    proj_parser = ProjParser(proj_reader.get_projects()[0].values())
+    proj_parser = ProjParser(proj_reader.get_projects()[1].values())
     parsed_project = proj_parser.get_parsed_project()
-
-    se = SEDomain(parsed_project[0], parsed_project[0], heuristic='zero', aggression=0.5)
+    print(parsed_project[0][1])
+    se = SEDomain(parsed_project[0], parsed_project[0], heuristic='zero', aggression=1)
 
     search_engine = AStar()
     # set the transition system
@@ -80,7 +80,6 @@ if __name__ == "__main__":
     search_engine.setHeuristic(se.heuristic)
     # set the cost function
     search_engine.setCostFunction(se.cost_function)
-
     # set the goal test
     search_engine.setGoalTest(se.goal_test)
     # set the start state
