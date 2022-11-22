@@ -47,14 +47,29 @@ class SeProblemInstanceToSeDomainMapper:
             modules[m].classes.append(classs)
 
         attributes = [Attribute('a', classes[i], classes[j]) for i, j in se_problem_instance.start_state_links]
+        goal_state_attributes = []
+        coupling_links_added = []
+        for c, m in se_problem_instance.classes:
+            for c2, m2, in se_problem_instance.classes:
+                if c != c2 and m == m2:  # cohesion links
+                    goal_state_attributes.append(Attribute('a', c, c2))
+                elif c != c2 and m != m2:  # coupling links
+                    moduless = (m, m2)
+                    if moduless not in coupling_links_added:
+                        goal_state_attributes.append(Attribute('a', c, c2))
+                        coupling_links_added.append(moduless)
 
         start_state = [classes, attributes, se_problem_instance.num_of_modules]
-        goal_state = [classes, [], se_problem_instance.num_of_modules]  # unused in A* algorithm
+
+        goal_state = [classes, goal_state_attributes, se_problem_instance.num_of_modules]  # unused in A* algorithm
+
+        print(goal_state_attributes)
+
         return SEDomain(start_state, goal_state, heuristic=heuristic, aggression=aggression)
 
 
 class CreateSeProbs:
-    def __init__(self, max_modules, max_classes, num_of_probs=100, min_modules=1, min_classes=1):
+    def __init__(self, max_modules, max_classes, num_of_probs=100, min_modules=1, min_classes=2):
         self.min_classes = min_classes
         self.min_modules = min_modules
         self.max_modules = max_modules
@@ -73,11 +88,11 @@ class CreateSeProbs:
         total_num_of_links_possible = num_of_classes * (num_of_classes-1)
         for i in range(randint(0, total_num_of_links_possible)):
             random_link_from_class = randint(0, num_of_classes-1)
-            random_link_to_class = choice(list(range(0, random_link_from_class)) + list(range(random_link_from_class, num_of_classes-1)))
+            random_link_to_class = choice(list(range(0, random_link_from_class)) + list(range(random_link_from_class+1, num_of_classes-1)))
             link = (random_link_from_class, random_link_to_class)
             while link in links:
                 random_link_from_class = randint(0, num_of_classes-1)
-                random_link_to_class = choice(list(range(0, random_link_from_class)) + list(range(random_link_from_class, num_of_classes-1)))
+                random_link_to_class = choice(list(range(0, random_link_from_class)) + list(range(random_link_from_class+1, num_of_classes-1)))
                 link = (random_link_from_class, random_link_to_class)
             # append a unique link
             links.append(link)

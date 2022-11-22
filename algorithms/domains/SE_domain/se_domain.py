@@ -40,6 +40,7 @@ class TransitionSystem:
     def __call__(self, *args, **kwds) :
         return self.successors(*args, **kwds)
 
+
 class Class:
     def __init__(self, name, module):
         self.name = name
@@ -62,6 +63,7 @@ class Class:
     def __hash__(self):
         return hash(self.name)
 
+
 class Module:
     def __init__(self, name, classes):
         self.name = name
@@ -83,6 +85,7 @@ class Module:
 
     def __hash__(self):
         return hash(self.name)
+
 
 class Attribute:
     def __init__(self, name, class1, class2):
@@ -107,6 +110,7 @@ class Attribute:
     def __hash__(self):
         return hash(self.name)
 
+
 class State:
     def __init__(self, name, cell: List[Union[List[Class], List[Attribute], int]]=None, parent = None, g = 1):
         self.name = name
@@ -127,6 +131,7 @@ class State:
             return self.name == other
         else:
             return False
+
     def __lt__(self, other):
         return self.g < other.g
 
@@ -135,6 +140,7 @@ class State:
 
     def __hash__(self):
         return hash(self.name)
+
 
 class Action:
     def __init__(self, name):
@@ -157,6 +163,7 @@ class Action:
     def __hash__(self):
         return hash(self.name)
 
+
 class CostFunction:
 
     def __init__(self, cost):
@@ -170,6 +177,7 @@ class CostFunction:
 
     def __call__(self, *args, **kwds):
         return self.cost(*args, **kwds)
+
 
 class SEDomain:
     def __init__(self, start_state, goal_state, heuristic = 'h1', aggression = 1):
@@ -223,7 +231,6 @@ class SEDomain:
             return self.add_inter_edge(state)
         else:
             return None, None
-    
 
     def delete_intra_edge(self, state):
         """
@@ -276,7 +283,6 @@ class SEDomain:
 
         return None, None
 
-                    
     def add_intra_edge(self, state):
         """
         Add an intra edge
@@ -329,7 +335,6 @@ class SEDomain:
 
         return None, None
 
-    
     def add_inter_edge(self, state):
         """
         Add an inter edge
@@ -412,6 +417,7 @@ class SEDomain:
             return state.g + 10
         elif action == Action("delete intra edge"):
             return state.g + 1
+
     def is_goal(self, state):
         # for attr in state.cell[1]:
             # if attr not in self.goal_state.cell[1]:

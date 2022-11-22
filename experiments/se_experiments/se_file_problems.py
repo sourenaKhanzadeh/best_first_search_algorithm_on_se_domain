@@ -15,7 +15,7 @@ from experiments.se_experiments.se_files.create_se_probs import *
 PROBS_FILE = "se_files/se.probs"
 MAX_NUM_OF_MODULES = 2
 MAX_NUM_OF_CLASSES = 6
-NUM_OF_PROBS = 100
+NUM_OF_PROBS = 1
 
 SOL_FILE = "se_files/se_sol.txt"
 
@@ -28,7 +28,7 @@ def main():
 
     se_domains = [SeProblemInstanceToSeDomainMapper.map(prob) for prob in se_probs.probs]
 
-    sol_paths = []
+    sol_stats = []
 
     for se_domain in se_domains:
         search_engine = AStar()
@@ -46,15 +46,15 @@ def main():
         # search
         path = search_engine.search(se_domain.start_state, se_domain.goal_state)
 
-        sol_paths.append(path)
+        sol_stats.append(search_engine.statistics())
 
         # print the path
         print(path)
         print(search_engine.statistics())
 
     with open(SOL_FILE, "w") as sol_file:
-        for path in sol_paths:
-            sol_file.write(str(path))
+        for stats in sol_stats:
+            sol_file.write(str(stats))
 
 
 if __name__ == "__main__":
