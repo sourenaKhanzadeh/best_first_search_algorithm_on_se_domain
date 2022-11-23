@@ -96,7 +96,7 @@ class Walk:
         for parse in self.all_parses:
             for class_ in parse['classes']:
                 classes.append(class_)
-                all_classes.append(class_)
+                all_classes.append({class_: parse['modules']})
             for attr in parse['attributes']:
                 attrs.append(attr)
             for module in parse['modules']:
@@ -104,19 +104,27 @@ class Walk:
                     formatted_parses.append([f"{module}.{classes[0]}", attrs])
                 classes = []
                 attrs = []
+
         # if attrs not in clasess remove it
         for parse in formatted_parses:
+            parse.append([])
             for attr in parse[1]:
-                if attr not in all_classes:
-                    parse[1].remove(attr)
+                # if attr contains the words not in keys of all_classes remove it
+                if any(attr in key for key in all_classes):
+                    # parse[1].remove(attr)
+                    # add like this f"module.class" to the attributes
+                    parse[2].append(f"{list(filter(lambda x: attr in x, all_classes))[0][attr][0]}.{attr}")
+                if not any(attr in key for key in all_classes):
+                    # parse[1].remove(attr)
+                    continue
 
         # make format_parses like this [f"{model}.{class_}->{module2}.{attr2}", ...]
-        formatted_parses = [f"{parse[0]}->{attr}" for parse in formatted_parses for attr in parse[1]]
+        formatted_parses = [f"{parse[0]}->{attr}" for parse in formatted_parses for attr in parse[2]]
         return formatted_parses
             
 
 if __name__ == "__main__":
-    walk = Walk('data/10-cool-java-project')
+    walk = Walk('data/uml-reverse-mapper')
     walk.parse()
     formatted_parse = walk.format_parses()
     print(formatted_parse)
