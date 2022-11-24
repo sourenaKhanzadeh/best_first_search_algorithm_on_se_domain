@@ -13,20 +13,24 @@ from algorithms.best_first_search.astar import *
 from experiments.se_experiments.se_files.create_se_probs import *
 
 PROBS_FILE = "se_files/se.probs"
-MAX_NUM_OF_MODULES = 2
-MAX_NUM_OF_CLASSES = 6
-NUM_OF_PROBS = 1
+MIN_NUM_OF_MODULES = 2
+MAX_NUM_OF_MODULES = 3
+MAX_NUM_OF_CLASSES = 4
+NUM_OF_PROBS = 100
 
 SOL_FILE = "se_files/se_sol.txt"
 
 
 def main():
-    se_probs = CreateSeProbs(max_modules=MAX_NUM_OF_MODULES, max_classes=MAX_NUM_OF_CLASSES, num_of_probs=NUM_OF_PROBS)
+    se_probs = CreateSeProbs(min_modules=MIN_NUM_OF_MODULES, max_modules=MAX_NUM_OF_MODULES, max_classes=MAX_NUM_OF_CLASSES, num_of_probs=NUM_OF_PROBS)
 
     se_probs.create_probs()
     se_probs.write_probs_to_file(PROBS_FILE)  # writes problems in file
 
-    se_domains = [SeProblemInstanceToSeDomainMapper.map(prob) for prob in se_probs.probs]
+    # se_probs = [#SeProblemInstance.string_to_instance("2;[(0, 1), (1, 0), (2, 0), (3, 0)];[(3, 0), (2, 0), (3, 2), (0, 1), (2, 1), (0, 3), (0, 2), (3, 1), (1, 0)]"),
+    #             SeProblemInstance.string_to_instance("2;[(0, 1), (1, 0), (2, 1), (3, 0)];[(1, 2), (3, 0), (0, 2), (3, 2), (1, 0), (2, 3), (3, 1), (2, 1)]")]
+
+    se_domains = [SeProblemInstanceToSeDomainMapper.map(prob, heuristic='zero', aggression=1) for prob in se_probs.probs]
 
     sol_stats = []
 

@@ -21,7 +21,7 @@ def main():
         modules[1].classes.append(classes[i])
     
     attributes = [Attribute('a', classes[0], classes[1]), Attribute('a', classes[0], classes[2]),
-                  Attribute('a', classes[3], classes[2]), Attribute('a', classes[4], classes[5]),
+                  Attribute('a', classes[1], classes[3]), Attribute('a', classes[4], classes[5]),
                   Attribute('a', classes[3], classes[4]), Attribute('a', classes[5], classes[1])]
     goal_attributes = [Attribute('a', classes[0], classes[1]), Attribute('a', classes[0], classes[2]),
                     Attribute('a', classes[3], classes[2]), Attribute('a', classes[1], classes[2]),

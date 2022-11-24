@@ -211,7 +211,7 @@ class SEDomain:
         """
         # self.states = self.create_states()
         # actions = [Action("delete intra edge"), Action("delete inter edge"), Action("add intra edge"), Action("add inter edge")]
-        actions = [ Action("add intra edge"), Action("delete inter edge")]
+        actions = [ Action("delete inter edge"), Action("add intra edge") ]
         transition_relation = self.transition_relation
         init = self.start_state
         goals = self.goal_state
@@ -261,26 +261,18 @@ class SEDomain:
         # check if there is an intra edge
         if len(cell[0]) == 0:
             return None, None
-        inter_edges = {}
-        
-        for c in cell[1]:
-            if c.class1.module != c.class2.module:
-                if inter_edges.get((c.class1.module, c.class2.module), None) is None:
-                    inter_edges[(c.class1.module, c.class2.module)] = [c]
-                else:
-                    inter_edges[(c.class1.module, c.class2.module)].append(c)
+        inter_edges = self._get_inter_edges(state)
 
         for i in inter_edges.values():
             if len(i) > 1:
                 # delete inter edge
                 for j in i:
-                    if j not in self.delete_trail:
-                        self.delete_trail.append(j)
-                        new_cell = [cell[0], cell[1][:], cell[2]]
-                        new_cell[1].remove(j)
-                        new_state = State(str(new_cell), cell=new_cell)
-                        return state.g + 1, new_state
-
+                    # if j not in self.delete_trail:
+                    #     self.delete_trail.append(j)
+                    new_cell = [cell[0], cell[1][:], cell[2]]
+                    new_cell[1].remove(j)
+                    new_state = State(str(new_cell), cell=new_cell)
+                    return state.g + 1, new_state
         return None, None
 
     def add_intra_edge(self, state):
@@ -403,6 +395,7 @@ class SEDomain:
         return Heuristic(state)
     
     def goal_test(self, state):
+        # print(state)
         return self.is_goal(state)
 
     def get_action_cost(self, state, action):
@@ -414,7 +407,7 @@ class SEDomain:
         elif action == Action("add intra edge"):
             return state.g + 1
         elif action == Action("delete inter edge"):
-            return state.g + 10
+            return state.g + 1
         elif action == Action("delete intra edge"):
             return state.g + 1
 
@@ -433,14 +426,40 @@ class SEDomain:
         # for attr in self.goal_state.cell[1]:
             # if attr not in state.cell[1]:
                 # return False
-        connections = 0 # coupling
-        for classes in state.cell[1]:
-            if classes.class1 != classes.class2 and classes.class1.module != classes.class2.module:
-                connections += 1
 
-        if len(state.cell[1]) >  self.total_goal * self.aggression and connections == 1:
+        # number doesn't work - checking any 2 modules m1 and m2 have at most 1 connection
+        inter_edges = self._get_inter_edges(state)
+        # print(state)
+        # print(inter_edges)
+        for inter_edges_between_2_modules in inter_edges.values():
+            if len(inter_edges_between_2_modules) > 1:
+                return False
+        # connections = 0 # coupling
+        # for classes in state.cell[1]:
+        #     if classes.class1 != classes.class2 and classes.class1.module != classes.class2.module:
+        #         connections += 1
+        #
+        # if len(state.cell[1]) >  self.total_goal * self.aggression and connections == 1:
+
+        if len(state.cell[1]) >= self.total_goal * self.aggression:
             return True
         return False
+
+    def _get_inter_edges(self, state):
+        inter_edges = {} #{ (module1, module2): [c1, c2], (module2, module1): [] }
+
+        for c in state.cell[1]:
+            # edges from different modules
+            if c.class1.module != c.class2.module:
+                # keep track of one of (module1, module2) or (module2, module1) edges
+                if inter_edges.get((c.class1.module, c.class2.module), None) is None:
+                    if inter_edges.get((c.class2.module, c.class1.module), None) is None:
+                        inter_edges[(c.class1.module, c.class2.module)] = [c]
+                    else:
+                        inter_edges.get((c.class2.module, c.class1.module)).append(c)
+                else:
+                    inter_edges[(c.class1.module, c.class2.module)].append(c)
+        return inter_edges
     
     def __call__(self, *args, **kwds) :
         return self.successors(*args, **kwds)
