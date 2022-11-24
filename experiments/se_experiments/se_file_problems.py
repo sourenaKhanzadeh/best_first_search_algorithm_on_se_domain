@@ -13,10 +13,10 @@ from algorithms.best_first_search.astar import *
 from experiments.se_experiments.se_files.create_se_probs import *
 
 PROBS_FILE = "se_files/se.probs"
-MIN_NUM_OF_MODULES = 2
-MAX_NUM_OF_MODULES = 3
-MAX_NUM_OF_CLASSES = 4
-NUM_OF_PROBS = 100
+MIN_NUM_OF_MODULES = 100
+MAX_NUM_OF_MODULES = 1000
+MAX_NUM_OF_CLASSES = 100000
+NUM_OF_PROBS = 5
 
 SOL_FILE = "se_files/se_sol.txt"
 
@@ -33,6 +33,7 @@ def main():
     se_domains = [SeProblemInstanceToSeDomainMapper.map(prob, heuristic='zero', aggression=1) for prob in se_probs.probs]
 
     sol_stats = []
+    sol_paths = []
 
     for se_domain in se_domains:
         search_engine = AStar()
@@ -51,14 +52,18 @@ def main():
         path = search_engine.search(se_domain.start_state, se_domain.goal_state)
 
         sol_stats.append(search_engine.statistics())
+        sol_paths.append(path)
 
         # print the path
         print(path)
         print(search_engine.statistics())
 
+    # with open(SOL_FILE, "w") as sol_file:
+    #     for stats in sol_stats:
+    #         sol_file.write(str(stats) + '\n')
     with open(SOL_FILE, "w") as sol_file:
-        for stats in sol_stats:
-            sol_file.write(str(stats))
+        for path in sol_paths:
+            sol_file.write(str(len(path[1])) + " : " + str(path[1]) + '\n')
 
 
 if __name__ == "__main__":
