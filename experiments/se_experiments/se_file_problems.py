@@ -23,11 +23,16 @@ MAX_NUM_OF_CLASSES = 100000
 NUM_OF_PROBS = 5
 
 SOL_FILE = "se_files/se_sol.txt"
-ALG_BENCHMARK_FILE = "se_files/se_alg_benchmark.csv"
+ALG_BENCHMARK_FILE = "se_alg_benchmark.csv"
+
+AGGRESSIONS = [0.25, 0.5, 0.75, 1]
+
+HEURISTICS = ["zero", "coupling", "cohesion", "AddCouplingCohesion", "MaxCouplingCohesion"]
+
+__ALL__FILES__ = []
 
 
-
-def test_algorithms():
+def test_algorithms(heuristic, aggression, file_name):
     algs = [AStar(), IDAStar(), GBFS()]
 
     se_probs = []
@@ -36,7 +41,7 @@ def test_algorithms():
         for line in probs_file:
             se_probs.append(SeProblemInstance.string_to_instance(line))
     
-    se_domains = [SeProblemInstanceToSeDomainMapper.map(prob, heuristic='zero', aggression=1) for prob in se_probs]
+    se_domains = [SeProblemInstanceToSeDomainMapper.map(prob, heuristic=heuristic , aggression=aggression) for prob in se_probs]
     
     costs = dict()
     node_expansions = dict()
@@ -75,7 +80,7 @@ def test_algorithms():
     node_expansions_data.columns = [alg.__class__.__name__ + "_n_expansions" for alg in algs] + [alg.__class__.__name__ + "_cost" for alg in algs]
     data = node_expansions_data
 
-    data.to_csv(ALG_BENCHMARK_FILE, index=False, header=True)
+    data.to_csv(file_name, index=False, header=True)
 
 def main():
     se_probs = CreateSeProbs(min_modules=MIN_NUM_OF_MODULES, max_modules=MAX_NUM_OF_MODULES, max_classes=MAX_NUM_OF_CLASSES, num_of_probs=NUM_OF_PROBS)
@@ -124,4 +129,8 @@ def main():
 
 if __name__ == "__main__":
     # main()
-    test_algorithms()
+    for h in HEURISTICS:
+        for aggression in AGGRESSIONS:
+            __ALL__FILES__.append(f"se_files/{aggression}_{h}_" + ALG_BENCHMARK_FILE)
+            test_algorithms(h, aggression, __ALL__FILES__[-1])
+
