@@ -10,7 +10,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 from generic_defs.search_engine import *
 from algorithms.domains.SE_domain.se_domain import *
 from algorithms.best_first_search.astar import *
+from algorithms.best_first_search.idastar import *
+from algorithms.best_first_search.egreedy import *
 from experiments.se_experiments.se_files.create_se_probs import *
+
+import pandas as pd
 
 PROBS_FILE = "se_files/se.probs"
 MIN_NUM_OF_MODULES = 100
@@ -19,7 +23,59 @@ MAX_NUM_OF_CLASSES = 100000
 NUM_OF_PROBS = 5
 
 SOL_FILE = "se_files/se_sol.txt"
+ALG_BENCHMARK_FILE = "se_files/se_alg_benchmark.csv"
 
+
+
+def test_algorithms():
+    algs = [AStar(), IDAStar(), GBFS()]
+
+    se_probs = []
+
+    with open(PROBS_FILE, "r") as probs_file:
+        for line in probs_file:
+            se_probs.append(SeProblemInstance.string_to_instance(line))
+    
+    se_domains = [SeProblemInstanceToSeDomainMapper.map(prob, heuristic='zero', aggression=1) for prob in se_probs]
+    
+    costs = dict()
+    node_expansions = dict()
+
+    for alg in algs:
+        costs[alg.__class__.__name__] = []
+        node_expansions[alg.__class__.__name__] = []
+        for se_domain in se_domains:
+            search_engine = alg
+            search_engine.setTransitionSystem(se_domain.transition_system)
+            # set the heuristic
+            search_engine.setHeuristic(se_domain.heuristic)
+            # set the cost function
+            search_engine.setCostFunction(se_domain.cost_function)
+
+            # set the goal test
+            search_engine.setGoalTest(se_domain.goal_test)
+            # set the start state
+            search_engine.setStartState(se_domain.start_state)
+            # search
+            path = search_engine.search(se_domain.start_state, se_domain.goal_state)
+
+            costs[alg.__class__.__name__].append(search_engine.statistics()['cost'])
+            node_expansions[alg.__class__.__name__].append(search_engine.statistics()['nodes_expanded'])
+
+            # print the path
+            print(path)
+            print(search_engine.statistics())
+    cost_data = pd.DataFrame(costs)
+    node_expansions_data = pd.DataFrame(node_expansions)
+
+    # append cost data to node expansions data as data 
+    for alg in algs:
+        node_expansions_data[alg.__class__.__name__ + "_cost"] = cost_data[alg.__class__.__name__]
+    # change alg names to alg names + node expansions
+    node_expansions_data.columns = [alg.__class__.__name__ + "_n_expansions" for alg in algs] + [alg.__class__.__name__ + "_cost" for alg in algs]
+    data = node_expansions_data
+
+    data.to_csv(ALG_BENCHMARK_FILE, index=False, header=True)
 
 def main():
     se_probs = CreateSeProbs(min_modules=MIN_NUM_OF_MODULES, max_modules=MAX_NUM_OF_MODULES, max_classes=MAX_NUM_OF_CLASSES, num_of_probs=NUM_OF_PROBS)
@@ -67,4 +123,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    test_algorithms()
