@@ -23,8 +23,12 @@ class Heuristic(Enum):
     MaxCouplingCohesion = "MaxCouplingCohesion"
 
 
-def write_sol_to_file(filename, list_to_write, indices=[]):
+def write_sol_to_file(filename, list_to_write, indices=[], headers=[]):
     with open(filename, "w+") as f:
+        if len(headers) != 0:
+            header = [header_column + "," for header_column in headers]
+            header = header[:-1]
+            f.write(header)
         for obj_to_write in list_to_write:
             if len(indices) == 0:
                 to_write = obj_to_write
@@ -36,14 +40,22 @@ def write_sol_to_file(filename, list_to_write, indices=[]):
             f.write(to_write + '\n')
 
 
-def run_experiment(probs, heuristic=Heuristic.ZERO, print_paths=False, print_stats=False):
+def read_probs_from_file(filename):
+    se_probs = []
+    with open(filename, "r") as f:
+        for line in f:
+            se_probs.append(SeProblemInstance.string_to_instance(line))
+    return se_probs
+
+
+def run_experiment(probs, heuristic=Heuristic.ZERO, weight=1, print_paths=False, print_stats=False):
 
     se_domains = [SeProblemInstanceToSeDomainMapper.map(prob, heuristic=heuristic, aggression=1) for prob in probs]
 
     to_return = {"sol_paths": [], "sol_stats": []}
 
     for se_domain in se_domains:
-        search_engine = AStar()
+        search_engine = AStar(weight)
         # set the transition syxstem
         search_engine.setTransitionSystem(se_domain.transition_system)
         # set the heuristic

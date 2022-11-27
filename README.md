@@ -17,11 +17,11 @@ Using heuristic search on different domains. see how to [simulate](simulate) the
 # To Do:
 
 All due by Nov 26th
-- [ ] Confirm Heuristics work - tweak random experiments and confirm somehow - Samad - Nov 23
+- [x] Confirm Heuristics work - tweak random experiments and confirm somehow - Samad - Nov 23
 - [x] Set up Heuristic Experiments - evaluate node expansions, cost for each heuristic - Samad - Nov 24
-- [ ] Try WA* with Best Heuristic - Samad - Nov 25
-- [ ] Try IDA*, GBFS, and eGBFS - Suren
-- [ ] Set up aggression Experiments - 0.25, 0.5, 0.75, 1 - Samad - Nov 25
+- [x] Try WA* with Best Heuristic - Samad - Nov 25
+- [x] Try IDA*, GBFS, and eGBFS - Suren
+- [x] Set up aggression Experiments - 0.25, 0.5, 0.75, 1 - Suren - Nov 25
 
 
 

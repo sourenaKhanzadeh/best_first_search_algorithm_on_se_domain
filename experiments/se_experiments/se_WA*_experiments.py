@@ -12,13 +12,15 @@ import pandas as pd
 from collections import defaultdict
 
 PROBS_FILE = "se_files/se.probs"
-SOL_FILE = "se_files/se_heuristic_sol.csv"
+SOL_FILE = "se_files/se_wa_sol.csv"
 
+BEST_HEURISTIC = Heuristic.AddCouplingCohesion
 MIN_NUM_OF_MODULES = 10
 MAX_NUM_OF_MODULES = 10
 MIN_NUM_OF_CLASSES = 100
 MAX_NUM_OF_CLASSES = 100
 NUM_OF_PROBS = 100
+WEIGHTS = [1, 5, 10, 25, 50, 100]
 
 sol_files = ["se_files/heuristic_experiments/se_sol_" + heuristic.value + ".csv" for heuristic in Heuristic]
 
@@ -38,13 +40,13 @@ def main():
     # costs = defaultdict(list)
     node_expansions = defaultdict(list)
 
-    for i, heuristic in enumerate(Heuristic):
-        solutions = run_experiment(se_probs, heuristic=heuristic.value)
+    for i, weight in enumerate(WEIGHTS):
+        solutions = run_experiment(se_probs, heuristic=BEST_HEURISTIC.value, weight=weight)
 
         for solution in solutions["sol_stats"]:
             # costs[heuristic.value].append(solution["cost"])
-            node_expansions[heuristic.value].append(solution["nodes_expanded"])
-        print("Finished", heuristic.value)
+            node_expansions[weight].append(solution["nodes_expanded"])
+        print("Finished weight", weight)
 
     # cost_data = pd.DataFrame(costs)
     node_expansions_data = pd.DataFrame(node_expansions)
@@ -53,7 +55,7 @@ def main():
     # for heuristic in Heuristic:
     #     node_expansions_data[heuristic.value + "_cost"] = cost_data[heuristic.value]
     # change alg names to alg names + node expansions
-    node_expansions_data.columns = [heuristic.value + "_n_expansions" for heuristic in Heuristic]# + [heuristic.value + "_cost" for heuristic in Heuristic]
+    node_expansions_data.columns = [weight + "_n_expansions" for weight in WEIGHTS]# + [heuristic.value + "_cost" for heuristic in Heuristic]
     data = node_expansions_data
 
     data.to_csv(SOL_FILE, index=False, header=True)
