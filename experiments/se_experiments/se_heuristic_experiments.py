@@ -14,10 +14,10 @@ from collections import defaultdict
 PROBS_FILE = "se_files/se.probs"
 SOL_FILE = "se_files/se_heuristic_sol.csv"
 
-MIN_NUM_OF_MODULES = 10
-MAX_NUM_OF_MODULES = 10
-MIN_NUM_OF_CLASSES = 100
-MAX_NUM_OF_CLASSES = 100
+MIN_NUM_OF_MODULES = 5
+MAX_NUM_OF_MODULES = 5
+MIN_NUM_OF_CLASSES = 10
+MAX_NUM_OF_CLASSES = 10
 NUM_OF_PROBS = 100
 
 sol_files = ["se_files/heuristic_experiments/se_sol_" + heuristic.value + ".csv" for heuristic in Heuristic]
@@ -39,7 +39,7 @@ def main():
     node_expansions = defaultdict(list)
 
     for i, heuristic in enumerate(Heuristic):
-        solutions = run_experiment(se_probs, heuristic=heuristic.value)
+        solutions = run_experiment(se_probs, heuristic=heuristic.value, print_paths=True)
 
         for solution in solutions["sol_stats"]:
             # costs[heuristic.value].append(solution["cost"])
