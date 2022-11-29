@@ -15,10 +15,10 @@ PROBS_FILE = "se_files/se.probs"
 SOL_FILE = "se_files/se_wa_sol.csv"
 
 BEST_HEURISTIC = Heuristic.AddCouplingCohesion
-MIN_NUM_OF_MODULES = 10
-MAX_NUM_OF_MODULES = 10
-MIN_NUM_OF_CLASSES = 100
-MAX_NUM_OF_CLASSES = 100
+MIN_NUM_OF_MODULES = 5
+MAX_NUM_OF_MODULES = 5
+MIN_NUM_OF_CLASSES = 10
+MAX_NUM_OF_CLASSES = 10
 NUM_OF_PROBS = 100
 WEIGHTS = [1, 5, 10, 25, 50, 100]
 
@@ -36,12 +36,12 @@ def main():
     se_probs.write_probs_to_file(PROBS_FILE)  # writes problems in file
 
     se_probs = read_probs_from_file(PROBS_FILE)
-
+    print(f"Number of problems: {len(se_probs)}")
     # costs = defaultdict(list)
     node_expansions = defaultdict(list)
 
     for i, weight in enumerate(WEIGHTS):
-        solutions = run_experiment(se_probs, heuristic=BEST_HEURISTIC.value, weight=weight)
+        solutions = run_experiment(se_probs, heuristic=BEST_HEURISTIC.value, weight=weight, print_paths=True)
 
         for solution in solutions["sol_stats"]:
             # costs[heuristic.value].append(solution["cost"])
@@ -55,7 +55,7 @@ def main():
     # for heuristic in Heuristic:
     #     node_expansions_data[heuristic.value + "_cost"] = cost_data[heuristic.value]
     # change alg names to alg names + node expansions
-    node_expansions_data.columns = [weight + "_n_expansions" for weight in WEIGHTS]# + [heuristic.value + "_cost" for heuristic in Heuristic]
+    node_expansions_data.columns = [str(weight) + "_n_expansions" for weight in WEIGHTS]# + [heuristic.value + "_cost" for heuristic in Heuristic]
     data = node_expansions_data
 
     data.to_csv(SOL_FILE, index=False, header=True)
