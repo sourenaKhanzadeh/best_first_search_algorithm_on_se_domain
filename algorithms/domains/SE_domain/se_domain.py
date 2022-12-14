@@ -185,7 +185,6 @@ class SEDomain:
         self.goal_state = State(str(goal_state), cell=goal_state)
         self.states = [self.start_state, self.goal_state] 
         self.transition_system = self.create_transition_system()
-        self.heuristic = self.heuristic(self.states[0], heuristic)
         self.cost_function = CostFunction(self.get_action_cost)
         self.goal_test = self.goal_test
         self.delete_trail = []
@@ -193,17 +192,29 @@ class SEDomain:
         self.aggression = aggression
         # TODO: convert total_goal into formula after confirming:
         # len(self.goal_state.cell[0]) * (len(self.goal_state.cell[0])-1)
-        self.total_goal = 0
-        for c in self.goal_state.cell[0]:
-            for c2 in self.goal_state.cell[0]:
-                if c != c2 and c.module == c2.module:
-                    self.total_goal += 1
+        self.num_of_classes_per_module = self._initialize_num_of_classes_per_module(start_state[0], start_state[2])
+        self.cohesion_goal = sum([c * (c - 1) for c in self.num_of_classes_per_module])
+        # # calculate difference between current number of inter edges and goal's number of inter edges (len(modules)*len(modules)-1)
+        # self._sum_natural_numbers = lambda n: (n-1) * n / 2
+        # get outer module connections
+        self.coupling_goal = ((start_state[2]-1) * start_state[2])/2
+        # for c in self.goal_state.cell[0]:
+        #     for c2 in self.goal_state.cell[0]:
+        #         if c != c2 and c.module == c2.module:
+        #             self.total_goal += 1
+        self.heuristic = self.heuristic(self.states[0], heuristic)
 
     def __str__(self):
         return 'SE_Domain({}, {})'.format(self.transition_system, self.states)
 
     def __repr__(self):
         return self.__str__()
+
+    def _initialize_num_of_classes_per_module(self, classes, num_of_modules):
+        num_of_classes_per_module = [0] * num_of_modules
+        for c in classes:
+            num_of_classes_per_module[int(c.module.name.strip())] += 1
+        return num_of_classes_per_module
     
     def create_transition_system(self):
         """
@@ -384,13 +395,13 @@ class SEDomain:
         if type == "zero":
             return Heuristic(state)
         elif type == "coupling":
-            return CouplingHeuristic(state.cell[0], state.cell[1], state.cell[2])
+            return CouplingHeuristic(self.coupling_goal)
         elif type == "cohesion":
-            return CohesionHeuristic(state.cell[0], state.cell[1], state.cell[2])
+            return CohesionHeuristic(self.cohesion_goal)
         elif type == "AddCouplingCohesion":
-            return AddCouplingCohesionHeuristic(state.cell[0], state.cell[1], state.cell[2])
+            return AddCouplingCohesionHeuristic(self.coupling_goal, self.cohesion_goal)
         elif type == "MaxCouplingCohesion":
-            return MaxCouplingCohesionHeuristic(state.cell[0], state.cell[1], state.cell[2])
+            return MaxCouplingCohesionHeuristic(self.coupling_goal, self.cohesion_goal)
 
         return Heuristic(state)
     
@@ -441,7 +452,7 @@ class SEDomain:
         #
         # if len(state.cell[1]) >  self.total_goal * self.aggression and connections == 1:
 
-        if len(state.cell[1]) >= self.total_goal * self.aggression:
+        if len(state.cell[1]) >= self.cohesion_goal * self.aggression:
             return True
         return False
 
