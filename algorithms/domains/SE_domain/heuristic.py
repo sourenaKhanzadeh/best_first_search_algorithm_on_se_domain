@@ -38,7 +38,7 @@ class CohesionHeuristic:
         # goal's number of intra modules (sum for each module(len(m_classes)*(len(m_classes)-1))
         goal_cohesion_links_count = 0
         for m in self.modules:
-            goal_cohesion_links_count += len(self.classes)*(len(self.classes)-1)
+            goal_cohesion_links_count += len(m.classes)*(len(m.classes)-1)
 
         # get inter module connections
         connections = 0
