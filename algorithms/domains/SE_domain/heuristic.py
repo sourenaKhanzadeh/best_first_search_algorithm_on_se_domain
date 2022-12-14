@@ -39,11 +39,11 @@ class CohesionHeuristic:
 
         # get intra module connections
         connections = 0
-        for classes in state.cell[1]:
-            if classes.class1 != classes.class2 and classes.class1.module == classes.class2.module:
+        for edge in state.cell[1]:
+            if edge.class1 != edge.class2 and edge.class1.module == edge.class2.module:
                 connections += 1
 
-        return abs(self.cohesion_goal - connections)
+        return -1 * abs(self.cohesion_goal - connections)
 
 
 class AddCouplingCohesionHeuristic:
