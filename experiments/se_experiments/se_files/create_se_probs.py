@@ -125,7 +125,7 @@ class CreateSeProbs:
         #     classes =
 
     def write_probs_to_file(self, filename):
-        with open(filename, 'w') as probs_file:
+        with open(filename, 'w+') as probs_file:
             for prob in self.probs:
                 probs_file.write(str(prob) + '\n')
 

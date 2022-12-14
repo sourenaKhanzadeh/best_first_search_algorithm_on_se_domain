@@ -11,13 +11,13 @@ from experiments.se_experiments.se_experiment_utils import *
 import pandas as pd
 from collections import defaultdict
 
-PROBS_FILE = "se_files/se.probs"
-SOL_FILE = "se_files/se_heuristic_sol.csv"
+PROBS_FILE = "se_files/se_bigs.probs"
+SOL_FILE = "se_files/se_heuristic_sol_bigs.csv"
 
-MIN_NUM_OF_MODULES = 5
-MAX_NUM_OF_MODULES = 5
-MIN_NUM_OF_CLASSES = 10
-MAX_NUM_OF_CLASSES = 10
+MIN_NUM_OF_MODULES = 10
+MAX_NUM_OF_MODULES = 10
+MIN_NUM_OF_CLASSES = 50
+MAX_NUM_OF_CLASSES = 50
 NUM_OF_PROBS = 100
 
 sol_files = ["se_files/heuristic_experiments/se_sol_" + heuristic.value + ".csv" for heuristic in Heuristic]
@@ -57,7 +57,6 @@ def main():
     data = node_expansions_data
 
     data.to_csv(SOL_FILE, index=False, header=True)
-
 
 
 if __name__ == "__main__":

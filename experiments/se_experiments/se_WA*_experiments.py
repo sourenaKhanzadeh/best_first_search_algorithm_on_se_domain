@@ -11,7 +11,7 @@ from experiments.se_experiments.se_experiment_utils import *
 import pandas as pd
 from collections import defaultdict
 
-PROBS_FILE = "se_files/se.probs"
+PROBS_FILE = "se_files/se_wa.probs"
 SOL_FILE = "se_files/se_wa_sol.csv"
 
 BEST_HEURISTIC = Heuristic.AddCouplingCohesion
