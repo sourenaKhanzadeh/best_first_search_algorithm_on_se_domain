@@ -24,6 +24,16 @@ class CouplingHeuristic:
 
         return abs(self.coupling_goal - connections)
 
+# 5
+# -5
+# -2
+# 0
+# #increasing
+#
+# 5 = 5-5 = 0
+# 5-2 = 3
+# 5-0 = 5
+# #increasing
 
 class CohesionHeuristic:
     def __init__(self, cohesion_goal):
@@ -43,7 +53,7 @@ class CohesionHeuristic:
             if edge.class1 != edge.class2 and edge.class1.module == edge.class2.module:
                 connections += 1
 
-        return -1 * abs(self.cohesion_goal - connections)
+        return self.cohesion_goal - abs(self.cohesion_goal - connections)
 
 
 class AddCouplingCohesionHeuristic:
@@ -61,4 +71,4 @@ class MaxCouplingCohesionHeuristic:
         self.cohesion_goal = cohesion_goal
 
     def __call__(self, state):
-        return max(CohesionHeuristic(self.cohesion_goal)(state), CouplingHeuristic(self.coupling_goal)(state))
+        return max(abs(CohesionHeuristic(self.cohesion_goal)(state)), CouplingHeuristic(self.coupling_goal)(state))
