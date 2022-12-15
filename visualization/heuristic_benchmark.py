@@ -32,7 +32,7 @@ def plot_n_expansions():
     plt.ylabel("Number of Node Expansions")
     plt.title("Number of Node Expansions for Heuristic A*")
     plt.legend()
-    plt.savefig(os.path.join(PLOTS_PATH, "n_expansions_heuristic.png"))
+    plt.savefig(os.path.join(PLOTS_PATH, "n_expansions_heuristic_2.png"))
 
 
 def matrex_plot_n_expansions():
@@ -44,11 +44,11 @@ def matrex_plot_n_expansions():
     len_of_prod = len(list(itertools.product(heuristics, heuristics)))
     print(len_of_prod)
     # make nxm figures side by side
-    fig, axs = plt.subplots(5, 5, figsize=(10, 10))
+    fig, axs = plt.subplots(5, 1, figsize=(10, 10))
     for i in range(5):
-        for j in range(5):
+        for j in range(1):
             # get the axes
-            ax = axs[i, j]
+            ax = axs[i]
             # plot the line chart of node expansions vs cost
             for k in range(5):
                 sns.lineplot(x=f"{heuristics[i]}", y="{}".format(heuristics[k]), label="H = {}".format(heuristics[k][0:5]), data=df, ax=ax)
@@ -60,11 +60,11 @@ def matrex_plot_n_expansions():
             ax.legend(fontsize='xx-small')
             # tight layout
             plt.tight_layout()
-    plt.savefig(os.path.join(PLOTS_PATH, "n_expansions_heuristic_matrix.png"))
+    plt.savefig(os.path.join(PLOTS_PATH, "n_expansions_heuristic_matrix_2.png"))
 
 def main():
-    # plot_n_expansions()
-    matrex_plot_n_expansions()
+    plot_n_expansions()
+    # matrex_plot_n_expansions()
 
 
 if __name__ == "__main__":

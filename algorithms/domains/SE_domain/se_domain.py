@@ -211,10 +211,11 @@ class SEDomain:
         return self.__str__()
 
     def _initialize_num_of_classes_per_module(self, classes, num_of_modules):
-        num_of_classes_per_module = [0] * num_of_modules
-        for c in classes:
-            num_of_classes_per_module[int(c.module.name.strip())] += 1
-        return num_of_classes_per_module
+        # num_of_classes_per_module = [0] * num_of_modules
+        # for c in classes:
+        #     num_of_classes_per_module[int(c.module.name.strip())] += 1
+        # return num_of_classes_per_module
+        return [len([c for c in classes if c.module.name == str(i)]) for i in range(num_of_modules)]
     
     def create_transition_system(self):
         """

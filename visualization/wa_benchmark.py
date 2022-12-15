@@ -44,11 +44,11 @@ def plot_scatter_n_expansions():
     len_of_prod = len(list(itertools.product(n_of_nodes, n_of_nodes)))
     print(len_of_prod)
     # make nxm figures side by side
-    fig, axs = plt.subplots(5, 5, figsize=(10, 10))
+    fig, axs = plt.subplots(5, 1, figsize=(10, 10))
     for i in range(5):
-        for j in range(5):
+        for j in range(1):
             # get the axes
-            ax = axs[i, j]
+            ax = axs[i]
             # plot the line chart of node expansions vs cost
             for k in range(5):
                 sns.lineplot(x=f"{n_of_nodes[i]}_n_expansions", y="{}_n_expansions".format(n_of_nodes[k]), label="W = {}".format(n_of_nodes[k]), data=df, ax=ax)
@@ -60,7 +60,7 @@ def plot_scatter_n_expansions():
             ax.legend(fontsize='xx-small')
             # tight layout
             plt.tight_layout()
-    plt.savefig(os.path.join(PLOTS_PATH, "matrix_n_expansions_wa.png"))
+    plt.savefig(os.path.join(PLOTS_PATH, "matrix_n_expansions_wa_2.png"))
     # plot the number of node expansions
     
     # plt.figure(figsize=(10, 10))
@@ -77,7 +77,7 @@ def plot_scatter_n_expansions():
     # plt.savefig(os.path.join(PLOTS_PATH, "scatter_n_expansions_wa.png"))
 
 def main():
-    plot_n_expansions()
+    # plot_n_expansions()
     plot_scatter_n_expansions()
 
 

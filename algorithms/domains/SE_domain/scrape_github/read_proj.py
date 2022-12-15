@@ -80,8 +80,8 @@ class ProjParser:
 
 if __name__ == "__main__":
     proj_reader = ProjReader(PROJ_PATH)
-    print(proj_reader.get_projects())
-    proj_parser = ProjParser(proj_reader.get_projects()[1].values())
+    # print(proj_reader.get_projects())
+    proj_parser = ProjParser(proj_reader.get_projects()[0].values())
     parsed_project = proj_parser.get_parsed_project()
     print(parsed_project[0])
     se = SEDomain(parsed_project[0], parsed_project[0], heuristic='zero', aggression=1)
